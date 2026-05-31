@@ -1,0 +1,10 @@
+[package]
+name = "ocarina-listener"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+cpal = "0.15.3"
+console = "0.15.8"
+pitch-detection = "0.3.0"
+json = "0.12.4"
