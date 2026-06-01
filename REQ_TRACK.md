@@ -20,8 +20,17 @@
 | S4 | Met | Song title is pushed to notekeeper on recognition |
 | S5 | Not Addressed | No audio playback implemented; no audio data in songbook |
 
-## Performance
+## Performance, Device & Project
 | ID | Status | Notes |
 |----|--------|-------|
 | P1 | Not Addressed | Not benchmarked on RPi Zero 2W |
 | P2 | In Progress | Songbook pre-loaded; blocked on A4 (settings JSON not yet implemented) |
+| P3 | Not Addressed | No service installer script; build-off-target.sh only builds and deploys the binary |
+| P4 | Not Addressed | No OS image generation; Dockerfile.cross is for cross-compilation only, not image baking |
+
+## Display
+| ID | Status | Notes |
+|----|--------|-------|
+| D1 | Not Addressed | No display driver or rendering logic implemented |
+| D2 | Not Addressed | Depends on D1 |
+| D3 | Not Addressed | Depends on D1 |

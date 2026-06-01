@@ -11,8 +11,12 @@ mod songs;
 
 use std::collections::{VecDeque, BTreeMap};
 
+use rppal::{
+    i2c::I2c,
+    hal::Delay};
 
-fn main() {
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Hello, {}! :)"/*\nHope {} likes this uwu"*/
     , Style::new().color256(213).bold().apply_to("World")/*
     , Style::new().color256(135).bold().apply_to("someone")*/);
@@ -44,6 +48,28 @@ fn main() {
     let mut last_note: String = String::from("--");
     let mut played_notes: VecDeque<String> = VecDeque::new();
     let sample_rate = sconfig.sample_rate.0;
+
+    // Set up 16-segment display
+    let mut lcd_i2c = match I2c::new() {
+        Ok(connection) => connection,
+        Err(_) => panic!("Error creating i2c!!")
+    };
+
+    let mut delay = Delay::new();
+
+    let mut lcd = match lcd_lcm1602_i2c::sync_lcd::Lcd::new(&mut lcd_i2c, &mut delay)
+    .with_address(0x27)
+    .with_cursor_on(false)
+    .with_rows(2)
+    .init() {
+        Ok(l) => l,
+        Err(_) => panic!("Error creating LCD!!")
+    };
+
+    lcd.clear().unwrap();
+    lcd.set_cursor(1,0)?;
+    lcd.write_str("Ocarina*Listener").unwrap();
+
 
     // Run Mic Data
     let _stream = device.build_input_stream(
