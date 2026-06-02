@@ -1,2 +1,6 @@
 /target
 /scripts/secrets/
+/ocarina-os/poky
+/ocarina-os/meta-raspberrypi
+/ocarina-os/meta-openembedded
+/ocarina-os/*.wic
