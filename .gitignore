@@ -3,4 +3,6 @@
 /ocarina-os/poky
 /ocarina-os/meta-raspberrypi
 /ocarina-os/meta-openembedded
-/ocarina-os/*.wic
+*.wic
+*.wic.bz2
+*.wic.bmap

@@ -1,0 +1,24 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          ocarina-listener
+# Required-Start:    $network $local_fs
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Ocarina listener
+### END INIT INFO
+
+case "$1" in
+    start)
+        echo "Starting ocarina-listener"
+        start-stop-daemon --start --background --exec /usr/bin/ocarina-listener
+        ;;
+    stop)
+        echo "Stopping ocarina-listener"
+        start-stop-daemon --stop --exec /usr/bin/ocarina-listener
+        ;;
+    *)
+        echo "Usage: $0 {start|stop}"
+        exit 1
+        ;;
+esac

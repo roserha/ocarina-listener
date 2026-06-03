@@ -6,4 +6,5 @@ sudo docker run \
   -it \
   -v /tftpboot:/tftpboot \
   -v $(pwd):/home/build/work \
+  -v my_data_volume:/home/build/data \
   yoctocontainer

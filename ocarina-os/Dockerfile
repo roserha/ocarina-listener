@@ -34,6 +34,8 @@ RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
 ENV LANG en_US.utf8
 
 USER build
+RUN mkdir -p /home/build/data
+VOLUME ["/home/build/data"]
 WORKDIR /home/build
 RUN git config --global user.email "build@example.com" && git config --global user.name "Build"
 
