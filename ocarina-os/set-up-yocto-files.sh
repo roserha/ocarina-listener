@@ -1,11 +1,2 @@
-echo "Cloning Poky/BitBake"
-
-git clone -b scarthgap https://git.yoctoproject.org/poky
-
-echo "Cloning meta-raspberrypi"
-
-git clone -b scarthgap https://github.com/agherzan/meta-raspberrypi
-
-echo "Cloning meta-openembedded"
-
-git clone -b scarthgap https://github.com/openembedded/meta-openembedded.git
+sudo cp ~/work/conf-files/bblayers.conf ~/my-build/conf/bblayers.conf
+sudo cp ~/work/conf-files/local.conf ~/my-build/conf/local.conf

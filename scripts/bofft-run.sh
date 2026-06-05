@@ -1,1 +1,1 @@
-./scripts/build-off-target.sh && ssh pi@$(cat ./scripts/secrets/RPIIP.txt) "./ocarina-listener"
+./scripts/build-off-target.sh && ssh root@$(cat ./scripts/secrets/RPIIP.txt) "sudo reboot"

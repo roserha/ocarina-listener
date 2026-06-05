@@ -1,0 +1,13 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          load-audio-modules
+# Required-Start:
+# Required-Stop:
+# Default-Start:     S
+# Default-Stop:
+# Short-Description: Load i2s audio modules
+### END INIT INFO
+modprobe snd-soc-bcm2835-i2s
+modprobe snd-soc-googlevoicehat-codec
+modprobe snd-soc-rpi-simple-soundcard
+modprobe i2c-dev
