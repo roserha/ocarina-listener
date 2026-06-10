@@ -102,7 +102,7 @@ pub fn interpret_note(initial_notes: &mut Vec<i16>, notes_played: &mut VecDeque<
     }
 }
 
-pub fn get_pitch(data: &[f32], notes_played: &mut VecDeque<String>, terminal: &Term, initial_notes: &mut Vec<i16>, last_note: &mut String, sample_rate: u32) {
+pub fn get_pitch(data: &[f32], notes_played: &mut VecDeque<String>, lcd: &mut lcd_lcm1602_i2c::sync_lcd::Lcd<rppal::i2c::I2c, rppal::hal::Delay>, terminal: &Term, initial_notes: &mut Vec<i16>, last_note: &mut String, sample_rate: u32) {
     // Let's calculate the volume via Root Mean Square
     let mut rms:f32 = 0.0;
 
@@ -186,5 +186,14 @@ pub fn get_pitch(data: &[f32], notes_played: &mut VecDeque<String>, terminal: &T
     }
 
     print!("\n");
+
+    lcd.set_cursor(0,0).unwrap();
+
+    for note in notes_played.iter().rev().take(4).rev(){
+        lcd.write_str(format!("{:^4}", note).as_str()).unwrap();
+    }
+
+    lcd.set_cursor(1,0).unwrap();
+    lcd.write_str(format!("Ocarina{}Listener", if actual_freq < 0.01 { " " } else { "*" }).as_str()).unwrap();
 
 }

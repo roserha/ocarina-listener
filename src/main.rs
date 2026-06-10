@@ -50,14 +50,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let sample_rate = sconfig.sample_rate.0;
 
     // Set up 16-segment display
-    let mut lcd_i2c = match I2c::new() {
-        Ok(connection) => connection,
-        Err(_) => panic!("Error creating i2c!!")
-    };
+    let lcd_i2c = Box::leak(Box::new(I2c::new().expect("Error creating I2c!!"))); 
 
-    let mut delay = Delay::new();
+    let delay = Box::leak(Box::new(Delay::new()));
 
-    let mut lcd = match lcd_lcm1602_i2c::sync_lcd::Lcd::new(&mut lcd_i2c, &mut delay)
+    let mut lcd = match lcd_lcm1602_i2c::sync_lcd::Lcd::new(lcd_i2c, delay)
     .with_address(0x27)
     .with_cursor_on(false)
     .with_rows(2)
@@ -75,7 +72,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let _stream = device.build_input_stream(
         &sconfig,
         move |data: &[f32], _: &cpal::InputCallbackInfo| {
-            notes::get_pitch(&data, &mut played_notes, &term, &mut initial_notes, &mut last_note, sample_rate);
+            notes::get_pitch(&data, &mut played_notes, &mut lcd, &term, &mut initial_notes, &mut last_note, sample_rate);
 
             if initial_notes.len() == 0 {
                 songs::check_played_notes(&mut played_notes, &mut songbook);
