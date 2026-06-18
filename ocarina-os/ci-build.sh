@@ -1,18 +1,14 @@
 #!/bin/bash
 set -e
 
+# Make sure we're running this in the right place!
+
+cd /home/build/work
+
 # Preparing repositories
 
-echo "Cloning Poky/BitBake"
-
 [ -d poky ] || git clone -b scarthgap https://git.yoctoproject.org/poky
-
-echo "Cloning meta-raspberrypi"
-
 [ -d meta-raspberrypi ] || git clone -b scarthgap https://github.com/agherzan/meta-raspberrypi
-
-echo "Cloning meta-openembedded"
-
 [ -d meta-openembedded ] || git clone -b scarthgap https://github.com/openembedded/meta-openembedded.git
 
 # Set up source
