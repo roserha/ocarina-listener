@@ -5,6 +5,7 @@ pipeline {
         stage('Build Rust Binary') {
             steps {
                 sh '''
+                    export PATH="$HOME/.cargo/bin:$PATH"
                     rustup default stable
                     cross build --target aarch64-unknown-linux-gnu --release
                     cp ./target/aarch64-unknown-linux-gnu/release/ocarina-listener \
