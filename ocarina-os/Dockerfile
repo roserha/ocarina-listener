@@ -26,7 +26,7 @@ RUN useradd -ms /bin/bash -p build build -u 1028 -g 1000 && \
         usermod -aG sudo build && \
         echo "build:build" | chpasswd
 
-RUN mkdir -p /home/build/my-build
+RUN mkdir -p /home/build/my-build && chown -R build:build /home/build
 VOLUME ["/home/build/my-build"]
 
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
