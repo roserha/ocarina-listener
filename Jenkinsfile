@@ -29,7 +29,7 @@ pipeline {
 
         stage('Yocto Build') {
             steps {
-                sh 'sudo chmod -R 777 .'
+                sh 'sudo chmod -R 777 ./ocarina-os'
                 sh '''
                     sudo docker run --rm \
                       --device=/dev/kvm:/dev/kvm \

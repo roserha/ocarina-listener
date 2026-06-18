@@ -17,8 +17,8 @@ source ~/work/poky/oe-init-build-env ~/my-build
 
 # Copying files
 
-sudo cp ~/work/conf-files/bblayers.conf ~/my-build/conf/bblayers.conf
-sudo cp ~/work/conf-files/local.conf ~/my-build/conf/local.conf
+cp ~/work/conf-files/bblayers.conf ~/my-build/conf/bblayers.conf
+cp ~/work/conf-files/local.conf ~/my-build/conf/local.conf
 
 # Actually build image
 
@@ -27,5 +27,5 @@ bitbake core-image-base
 
 # Export image
 
-sudo rm ~/work/core-image-base-raspberrypi*-64.rootfs-*.wic.*
-sudo cp ~/my-build/tmp/deploy/images/raspberrypi*/core-image-base-raspberrypi*-64.rootfs-*.wic.* ~/work/
+rm ~/work/core-image-base-raspberrypi*-64.rootfs-*.wic.*
+cp ~/my-build/tmp/deploy/images/raspberrypi*/core-image-base-raspberrypi*-64.rootfs-*.wic.* ~/work/
