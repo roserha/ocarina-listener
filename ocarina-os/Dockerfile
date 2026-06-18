@@ -1,6 +1,4 @@
 FROM ubuntu:22.04
-MAINTAINER Rose Rodrigues <rodr0875@umn.edu>
-# Modified from Kris Chaplin's modifications to Cliff Brake's Ubuntu container  <cbrake@bec-systems.com>
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -34,8 +32,8 @@ RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
 ENV LANG en_US.utf8
 
 USER build
-RUN mkdir -p /home/build/data
-VOLUME ["/home/build/data"]
+RUN mkdir -p /home/build/my-build
+VOLUME ["/home/build/my-build"]
 WORKDIR /home/build
 RUN git config --global user.email "build@example.com" && git config --global user.name "Build"
 

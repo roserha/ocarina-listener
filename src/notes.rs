@@ -5,10 +5,20 @@ use pitch_detection::{
     Pitch,
 };
 
-use console::{Style, Term};  // Cute Console Crate
+
 
 use std::cell::RefCell;
 use std::collections::{VecDeque, BTreeMap};
+
+use std::sync::mpsc::Sender;
+
+// Display thread data
+pub struct DisplayData {
+    pub freq: f32,
+    pub semitones: i16,
+    pub note_name: String,
+    pub notes_played: Vec<String>,
+}
 
 // the audio callback always runs on its own dedicated thread, so thread_local is
 // the right home for the detector -- safe, no unsafe, no Send shenanigans
@@ -102,7 +112,7 @@ pub fn interpret_note(initial_notes: &mut Vec<i16>, notes_played: &mut VecDeque<
     }
 }
 
-pub fn get_pitch(data: &[f32], notes_played: &mut VecDeque<String>, lcd: &mut lcd_lcm1602_i2c::sync_lcd::Lcd<rppal::i2c::I2c, rppal::hal::Delay>, terminal: &Term, initial_notes: &mut Vec<i16>, last_note: &mut String, sample_rate: u32) {
+pub fn get_pitch(data: &[f32], notes_played: &mut VecDeque<String>, tx: &Sender<DisplayData>, initial_notes: &mut Vec<i16>, last_note: &mut String, sample_rate: u32) {
     // Let's calculate the volume via Root Mean Square
     let mut rms:f32 = 0.0;
 
@@ -163,37 +173,15 @@ pub fn get_pitch(data: &[f32], notes_played: &mut VecDeque<String>, lcd: &mut lc
     initial_notes.push(semitones);
     interpret_note(initial_notes, notes_played, last_note);
 
-    // Reset terminal cursor position
-
-    terminal.move_cursor_up(1).unwrap();
-    terminal.clear_line().unwrap();
-    terminal.move_cursor_up(1).unwrap();
-    terminal.clear_line().unwrap();
-    terminal.move_cursor_up(1).unwrap();
-    terminal.clear_line().unwrap();
-    terminal.move_cursor_up(1).unwrap();
-    terminal.clear_line().unwrap();
-
-    // And finally, print data!
-
-    println!("Frequency {}\nSemitones {}\nNote {}",
-    Style::new().green().bold().apply_to(actual_freq),
-    Style::new().red().bold().apply_to(semitones),
-    Style::new().blue().bold().apply_to(note_name));
-
-    for note in notes_played.iter(){
-        print!("{} ", Style::new().yellow().bold().apply_to(note));
-    }
-
-    print!("\n");
-
-    lcd.set_cursor(0,0).unwrap();
-
-    for note in notes_played.iter().rev().take(4).rev(){
-        lcd.write_str(format!("{:^4}", note).as_str()).unwrap();
-    }
-
-    lcd.set_cursor(1,0).unwrap();
-    lcd.write_str(format!("Ocarina{}Listener", if actual_freq < 0.01 { " " } else { "*" }).as_str()).unwrap();
-
+    // Finally, let's send everything to the display thread using note_info
+    // 0: {actual_freq}
+    // 1: {semitones}
+    // 2: {note_name}
+    // 3: notes_played
+    tx.send(DisplayData {
+        freq: actual_freq,
+        semitones,
+        note_name,
+        notes_played: notes_played.iter().cloned().collect(),
+    }).ok();
 }
