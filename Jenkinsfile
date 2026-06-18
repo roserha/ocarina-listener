@@ -1,9 +1,18 @@
 pipeline {
     agent any
     stages {
-        stage('Stage 1') {
-            steps {
-                echo 'Hello world!'
+        dir('ocarina-os') {
+            stage('Docker Container Work') {
+                agent {
+                    dockerfile true 
+                }
+                stages {
+                    stage('Hello World!') {
+                        steps {
+                            echo 'Hello world!'
+                        }
+                    }
+                }
             }
         }
     }
