@@ -1,6 +1,9 @@
 pipeline {
     agent any
-
+    options {
+        ansiColor('xterm')
+        buildName("ocarina_os_${env.BRANCH_NAME}_${env.BUILD_NUMBER}")
+    }
     stages {
         stage('Build Rust Binary') {
             steps {
