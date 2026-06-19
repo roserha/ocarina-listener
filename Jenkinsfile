@@ -39,6 +39,7 @@ pipeline {
                       -v /tftpboot:/tftpboot \
                       -v $(pwd)/ocarina-os:/home/build/work \
                       -v ocarina_bitbake_cache_volume:/home/build/my-build \
+                      -v ocarina_downloads_volume:/home/build/data/downloads \
                       yoctocontainer \
                       bash /home/build/work/ci-build.sh
                 '''
