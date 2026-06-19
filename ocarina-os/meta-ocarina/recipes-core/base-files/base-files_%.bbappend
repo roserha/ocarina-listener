@@ -63,9 +63,9 @@ EOF
 
     # quit plymouth when boot completes
     cat > ${D}${sysconfdir}/init.d/plymouth-quit << 'EOF'
-    #!/bin/sh
-    plymouth quit
-    EOF
+#!/bin/sh
+plymouth quit
+EOF
     chmod 0755 ${D}${sysconfdir}/init.d/plymouth-quit
     ln -s ../init.d/plymouth-quit ${D}${sysconfdir}/rc5.d/S99plymouth-quit
 }
