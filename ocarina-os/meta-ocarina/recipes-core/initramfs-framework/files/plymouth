@@ -17,10 +17,13 @@ plymouth_run() {
     done
 
     echo "PLYMOUTH: fb0 ready" > /dev/console
-    plymouthd --mode=boot --attach-to-session --pid-file=/run/plymouth/pid
+    plymouthd --mode=boot --pid-file=/run/plymouth/pid
     echo "PLYMOUTH: showing splash" > /dev/console
     plymouth show-splash
     echo "PLYMOUTH: done" > /dev/console
+
+    # temporary
+    sleep 5
 }
 
 plymouth_stop() {
