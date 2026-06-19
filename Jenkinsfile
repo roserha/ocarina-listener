@@ -49,8 +49,8 @@ pipeline {
             steps {
                 sh '''
                     sudo umount /dev/mmcblk0p* || true
-                    IMAGE=$(ls core-image-base-raspberrypi3-64.rootfs-*.wic.bz2)
-                    BMAP=$(ls core-image-base-raspberrypi3-64.rootfs-*.wic.bmap 2>/dev/null || true)
+                    IMAGE=$(ls ./ocarina-os/core-image-base-raspberrypi3-64.rootfs-*.wic.bz2)
+                    BMAP=$(ls ./ocarina-os/core-image-base-raspberrypi3-64.rootfs-*.wic.bmap 2>/dev/null || true)
                     if [ -n "$BMAP" ]; then
                         sudo bmaptool copy --bmap $BMAP $IMAGE /dev/mmcblk0
                     else
