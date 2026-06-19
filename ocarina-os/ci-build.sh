@@ -34,5 +34,5 @@ bitbake core-image-base
 
 # Export image
 
-rm ~/work/core-image-base-raspberrypi*-64.rootfs-*.wic.*
+rm ~/work/core-image-base-raspberrypi*-64.rootfs-*.wic.* || true
 cp ~/my-build/tmp/deploy/images/raspberrypi*/core-image-base-raspberrypi*-64.rootfs-*.wic.* ~/work/
