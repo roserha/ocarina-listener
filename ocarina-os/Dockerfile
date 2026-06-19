@@ -26,6 +26,8 @@ RUN useradd -ms /bin/bash -p build build -u 1028 -g 1000 && \
         usermod -aG sudo build && \
         echo "build:build" | chpasswd
 
+RUN ln -s /usr/bin/update-desktop-database /usr/local/bin/update-desktop-database
+
 RUN mkdir -p /home/build/my-build && chown -R build:build /home/build
 VOLUME ["/home/build/my-build"]
 
