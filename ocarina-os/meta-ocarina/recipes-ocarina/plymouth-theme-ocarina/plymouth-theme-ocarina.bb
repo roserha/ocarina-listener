@@ -24,4 +24,4 @@ FILES:${PN} = "${datadir}/plymouth/themes/ocarina-splash \
                ${datadir}/plymouth/themes/ocarina-splash/ocarina-splash.script \
                ${datadir}/plymouth/themes/ocarina-splash/OcarinaOS.png"
 
-RDEPENDS:${PN} = "plymouth plymouth-plugin-script"
+RDEPENDS:${PN} = "plymouth"
