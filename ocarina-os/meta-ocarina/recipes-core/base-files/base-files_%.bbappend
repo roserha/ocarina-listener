@@ -68,16 +68,6 @@ EOF
     install -d ${D}${sysconfdir}/rcS.d
     ln -s ../init.d/plymouth-start ${D}${sysconfdir}/rcS.d/S02plymouth-start
 
-    # quit plymouth when boot completes
-    install -d ${D}${sysconfdir}/rc5.d
-    cat > ${D}${sysconfdir}/init.d/plymouth-quit << 'EOF'
-#!/bin/sh
-plymouth quit
-EOF
-    chmod 0755 ${D}${sysconfdir}/init.d/plymouth-quit
-    ln -s ../init.d/plymouth-quit ${D}${sysconfdir}/rc5.d/S08plymouth-quit
-}
-
 FILES:${PN}:append = " ${sysconfdir}/profile.d/motd.sh \
                        ${sysconfdir}/profile.d/aliases.sh \
                        ${sysconfdir}/modules-load.d/i2s-audio.conf \
@@ -87,5 +77,4 @@ FILES:${PN}:append = " ${sysconfdir}/profile.d/motd.sh \
                        ${sysconfdir}/rcS.d/S06load-modules \
                        ${sysconfdir}/init.d/plymouth-start \
                        ${sysconfdir}/rcS.d/S02plymouth-start \
-                       ${sysconfdir}/init.d/plymouth-quit \
                        ${sysconfdir}/init.d/wifi-connect"

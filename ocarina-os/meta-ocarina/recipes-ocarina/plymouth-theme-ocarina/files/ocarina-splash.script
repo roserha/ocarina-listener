@@ -2,19 +2,13 @@
 screen_width = Window.GetWidth();
 screen_height = Window.GetHeight();
 
-// gradient background - dark purple to black
-for (y = 0; y < screen_height; y++) {
-    t = y / screen_height;
-    r = 0.05 * (1.0 - t);
-    g = 0.0;
-    b = 0.1 * (1.0 - t);
-    line = Rectangle();
-    line.SetX(0);
-    line.SetY(y);
-    line.SetWidth(screen_width);
-    line.SetHeight(1);
-    line.SetColor(r, g, b, 1.0);
-}
+// Simple dark background instead of per-pixel gradient
+background = Rectangle();
+background.SetX(0);
+background.SetY(0);
+background.SetWidth(screen_width);
+background.SetHeight(screen_height);
+background.SetColor(0.2, 0.0, 0.4, 1.0);
 
 // Logo
 logo_image = Image("OcarinaOS.png");
@@ -29,7 +23,7 @@ if (logo_width > screen_width * 0.6)
 logo_sprite = Sprite(logo_image.Scale(logo_width * scale, logo_height * scale));
 logo_sprite.SetX((screen_width - logo_width * scale) / 2);
 logo_sprite.SetY((screen_height - logo_height * scale) / 2 - 30);
-logo_sprite.SetOpacity(0.0);
+logo_sprite.SetOpacity(1.0);
 
 // Particle system
 MAX_PARTICLES = 80;
