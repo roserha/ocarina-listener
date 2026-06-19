@@ -1,6 +1,6 @@
 SUMMARY = "OcarinaOS Plymouth splash screen theme"
 LICENSE = "MIT"
-LIC_FILES_CHKSUM = "file://COPYING;md5=94d55d512a9ba36caa9b7df079bae19f"
+LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI = "file://ocarina-splash.plymouth \
