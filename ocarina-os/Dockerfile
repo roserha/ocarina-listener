@@ -5,7 +5,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN \
         dpkg --add-architecture i386 && \
         apt-get update && \
-        apt-get install -yq sudo build-essential git nano vim\
+        apt-get install -yq sudo build-essential git nano vim desktop-file-utils\
           python3-yaml libncursesw5 libncursesw5:i386 \
           python3 man bash diffstat gawk chrpath wget cpio \
           texinfo lzop apt-utils bc screen libncurses5-dev locales \
