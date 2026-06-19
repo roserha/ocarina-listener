@@ -6,8 +6,21 @@ plymouth_enabled() {
 }
 
 plymouth_run() {
-    plymouthd --mode=boot --attach-to-session --pid-file=/run/plymouth/pid
-    plymouth show-splash
+    echo "PLYMOUTH: starting" > /dev/ttyAMA0
+    mkdir -p /run/plymouth
+
+    # wait for framebuffer to be ready
+    local i=0
+    while [ ! -e /dev/fb0 ] && [ $i -lt 20 ]; do
+        sleep 0.1
+        i=$((i + 1))
+    done
+
+    echo "PLYMOUTH: fb0 ready, launching plymouthd" > /dev/ttyAMA0
+    plymouthd --mode=boot --attach-to-session --pid-file=/run/plymouth/pid 2>/dev/ttyAMA0
+    echo "PLYMOUTH: showing splash" > /dev/ttyAMA0
+    plymouth show-splash 2>/dev/ttyAMA0
+    echo "PLYMOUTH: done" > /dev/ttyAMA0
 }
 
 plymouth_stop() {
