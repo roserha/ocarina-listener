@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=OcarinaOS Splash
+Description=Golden particle splash for OcarinaOS
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/ocarina-splash
+ScriptFile=/usr/share/plymouth/themes/ocarina-splash/ocarina-splash.script
