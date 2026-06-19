@@ -50,6 +50,9 @@ pipeline {
             when {
                 expression { sh(script: 'test -b /dev/mmcblk0', returnStatus: true) == 0 }
             }
+            options {
+                catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE')
+            }
             steps {
                 sh '''
                     sudo umount /dev/mmcblk0p* || true
@@ -78,6 +81,10 @@ pipeline {
                 -v ocarina_bitbake_cache_volume:/home/build/my-build \
                 yoctocontainer \
                 bash -c "rm -f /home/build/my-build/bitbake.lock /home/build/my-build/bitbake.sock" || true
+                if [ -f /dev/mmcblk0 ] && [ ! -b /dev/mmcblk0 ]; then
+                    sudo rm -f /dev/mmcblk0
+                    sleep 1
+                fi
             '''
         }
         success {
