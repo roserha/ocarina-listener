@@ -12,7 +12,7 @@ RUN \
           libc6-dev-i386 doxygen libssl-dev dos2unix xvfb x11-utils \
           g++-multilib libssl-dev:i386 zlib1g-dev:i386 \
           libtool libtool-bin procps python3-distutils pigz socat \
-          zstd iproute2 lz4 iputils-ping \
+          zstd iproute2 lz4 iputils-ping qemu-user qemu-user-static \
           curl libtinfo5 net-tools xterm rsync u-boot-tools unzip zip && \
 
         rm -rf /var/lib/apt-lists/* && \
