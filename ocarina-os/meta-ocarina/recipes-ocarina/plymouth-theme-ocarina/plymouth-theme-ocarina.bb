@@ -7,8 +7,6 @@ SRC_URI = "file://ocarina-splash.plymouth \
            file://ocarina-splash.script \
            file://OcarinaOS.png"
 
-S = "${WORKDIR}/plymouth-${PLYMOUTH_VERSION}"
-
 inherit allarch
 
 do_install() {
