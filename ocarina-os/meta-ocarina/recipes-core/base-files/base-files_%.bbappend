@@ -67,6 +67,7 @@ EOF
     chmod 0755 ${D}${sysconfdir}/init.d/plymouth-start
     install -d ${D}${sysconfdir}/rcS.d
     ln -s ../init.d/plymouth-start ${D}${sysconfdir}/rcS.d/S02plymouth-start
+}
 
 FILES:${PN}:append = " ${sysconfdir}/profile.d/motd.sh \
                        ${sysconfdir}/profile.d/aliases.sh \
