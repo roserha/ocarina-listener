@@ -20,6 +20,11 @@ source ~/work/poky/oe-init-build-env ~/my-build
 cp ~/work/conf-files/bblayers.conf ~/my-build/conf/bblayers.conf
 cp ~/work/conf-files/local.conf ~/my-build/conf/local.conf
 
+# disable font cache intercept since qemu can't handle it for now i guess
+echo '#!/bin/sh' > /home/build/work/poky/scripts/postinst-intercepts/update_font_cache
+echo 'exit 0' >> /home/build/work/poky/scripts/postinst-intercepts/update_font_cache
+chmod +x /home/build/work/poky/scripts/postinst-intercepts/update_font_cache
+
 # Actually build image
 
 bitbake core-image-base -c cleanall
