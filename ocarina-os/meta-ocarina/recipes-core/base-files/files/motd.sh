@@ -18,27 +18,6 @@ if [ -f "/etc/wpa_supplicant.conf" ]; then
   done
 fi
 
-# if no ip detected, offer to connect to wifi
-if [ -z "$IP" ]; then
-  echo ">> No network connection detected."
-  printf ">> Would you like to connect to WiFi? [y/N] "
-  read REPLY
-  if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ]; then
-    printf ">> SSID: "
-    read SSID
-    printf ">>  Password: "
-    read -s PSK
-    echo ""
-    wpa_passphrase "$SSID" "$PSK" >/etc/wpa_supplicant.conf
-    echo ">> Connecting..."
-    wpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant.conf >/dev/null 2>&1
-    dhcpcd wlan0 >/dev/null 2>&1
-    sleep 3
-    IP=$(ip addr show wlan0 2>/dev/null | grep "inet " | awk '{print $2}' | cut -d/ -f1)
-    echo "" && echo ""
-  fi
-fi
-
 cat <<'LOGO'
  .88888.                             oo                    .88888.  .d88888b  
 d8'   `8b                                                 d8'   `8b 88.    "' 
