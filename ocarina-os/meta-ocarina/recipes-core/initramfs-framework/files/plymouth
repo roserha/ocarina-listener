@@ -1,0 +1,15 @@
+#!/bin/sh
+# initramfs plymouth module
+
+plymouth_enabled() {
+    return 0
+}
+
+plymouth_run() {
+    plymouthd --mode=boot --attach-to-session --pid-file=/run/plymouth/pid
+    plymouth show-splash
+}
+
+plymouth_stop() {
+    plymouth quit
+}

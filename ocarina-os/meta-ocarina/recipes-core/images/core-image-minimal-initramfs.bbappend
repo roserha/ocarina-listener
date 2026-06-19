@@ -1,1 +1,1 @@
-PACKAGE_INSTALL:append = " plymouth plymouth-theme-ocarina"
+PACKAGE_INSTALL:append = " plymouth plymouth-theme-ocarina initramfs-module-plymouth"
