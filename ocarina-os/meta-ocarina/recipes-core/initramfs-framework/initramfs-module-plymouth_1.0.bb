@@ -10,8 +10,8 @@ inherit allarch
 
 do_install() {
     install -d ${D}/init.d
-    install -m 0755 ${WORKDIR}/plymouth ${D}/init.d/91-plymouth
+    install -m 0755 ${WORKDIR}/plymouth ${D}/init.d/20-plymouth
 }
 
-FILES:${PN} = "/init.d/91-plymouth"
+FILES:${PN} = "/init.d/20-plymouth"
 RDEPENDS:${PN} = "initramfs-framework-base plymouth"
