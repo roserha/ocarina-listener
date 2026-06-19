@@ -59,6 +59,7 @@ EOF
     ln -s ../init.d/wifi-connect ${D}${sysconfdir}/rcS.d/S07wifi-connect
 
     # quit plymouth when boot completes
+    install -d ${D}${sysconfdir}/rc5.d
     cat > ${D}${sysconfdir}/init.d/plymouth-quit << 'EOF'
 #!/bin/sh
 plymouth quit
