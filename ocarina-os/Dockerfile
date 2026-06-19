@@ -1,20 +1,18 @@
 FROM ubuntu:22.04
-MAINTAINER Rose Rodrigues <rodr0875@umn.edu>
-# Modified from Kris Chaplin's modifications to Cliff Brake's Ubuntu container  <cbrake@bec-systems.com>
 
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN \
         dpkg --add-architecture i386 && \
         apt-get update && \
-        apt-get install -yq sudo build-essential git nano vim\
+        apt-get install -yq sudo build-essential git nano vim desktop-file-utils\
           python3-yaml libncursesw5 libncursesw5:i386 \
           python3 man bash diffstat gawk chrpath wget cpio \
           texinfo lzop apt-utils bc screen libncurses5-dev locales \
           libc6-dev-i386 doxygen libssl-dev dos2unix xvfb x11-utils \
           g++-multilib libssl-dev:i386 zlib1g-dev:i386 \
           libtool libtool-bin procps python3-distutils pigz socat \
-          zstd iproute2 lz4 iputils-ping \
+          zstd iproute2 lz4 iputils-ping qemu-user qemu-user-static \
           curl libtinfo5 net-tools xterm rsync u-boot-tools unzip zip && \
 
         rm -rf /var/lib/apt-lists/* && \
@@ -28,14 +26,17 @@ RUN useradd -ms /bin/bash -p build build -u 1028 -g 1000 && \
         usermod -aG sudo build && \
         echo "build:build" | chpasswd
 
+RUN ln -s /usr/bin/update-desktop-database /usr/local/bin/update-desktop-database
+
+RUN mkdir -p /home/build/my-build && chown -R build:build /home/build
+VOLUME ["/home/build/my-build"]
+
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
     locale-gen
 
 ENV LANG en_US.utf8
 
 USER build
-RUN mkdir -p /home/build/data
-VOLUME ["/home/build/data"]
 WORKDIR /home/build
 RUN git config --global user.email "build@example.com" && git config --global user.name "Build"
 
