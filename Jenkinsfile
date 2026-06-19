@@ -67,4 +67,21 @@ pipeline {
             }
         }
     }
+    post {
+        always {
+            sh '''
+                sudo docker ps -a --filter "ancestor=yoctocontainer" --format "{{.ID}}" | xargs -r sudo docker rm -f || true
+                sudo docker run --rm \
+                -v ocarina_bitbake_cache_volume:/home/build/my-build \
+                yoctocontainer \
+                bash -c "rm -f /home/build/my-build/bitbake.lock /home/build/my-build/bitbake.sock" || true
+            '''
+        }
+        success {
+            echo "OcarinaOS build complete!"
+        }
+        failure {
+            echo "Build failed. sstate cache preserved in ocarina_bitbake_cache_volume"
+        }
+    }
 }
