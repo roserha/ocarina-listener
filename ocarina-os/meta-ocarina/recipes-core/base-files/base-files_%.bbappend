@@ -58,9 +58,6 @@ EOF
     install -m 0755 ${WORKDIR}/wifi-connect.sh ${D}${sysconfdir}/init.d/wifi-connect
     ln -s ../init.d/wifi-connect ${D}${sysconfdir}/rcS.d/S07wifi-connect
 
-    # autologin root on tty1 for weston
-    sed -i 's|1:2345:respawn:/sbin/getty 38400 tty1|1:2345:respawn:/sbin/getty --autologin root 38400 tty1|' ${D}${sysconfdir}/inittab
-
     # quit plymouth when boot completes
     cat > ${D}${sysconfdir}/init.d/plymouth-quit << 'EOF'
 #!/bin/sh
