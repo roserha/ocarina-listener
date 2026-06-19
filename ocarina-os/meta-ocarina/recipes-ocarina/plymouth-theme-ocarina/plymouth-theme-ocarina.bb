@@ -13,11 +13,11 @@ inherit allarch
 
 do_install() {
     install -d ${D}${datadir}/plymouth/themes/ocarina-splash
-    install -m 0644 ${WORKDIR}/ocarina-splash/ocarina-splash.plymouth \
+    install -m 0644 ${WORKDIR}/ocarina-splash.plymouth \
         ${D}${datadir}/plymouth/themes/ocarina-splash/
-    install -m 0644 ${WORKDIR}/ocarina-splash/ocarina-splash.script \
+    install -m 0644 ${WORKDIR}/ocarina-splash.script \
         ${D}${datadir}/plymouth/themes/ocarina-splash/
-    install -m 0644 ${WORKDIR}/ocarina-splash/OcarinaOS.png \
+    install -m 0644 ${WORKDIR}/OcarinaOS.png \
         ${D}${datadir}/plymouth/themes/ocarina-splash/
 }
 
