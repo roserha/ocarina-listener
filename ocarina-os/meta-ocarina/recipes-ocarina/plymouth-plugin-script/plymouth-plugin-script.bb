@@ -5,7 +5,9 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=a6f89e2100d9b6cdffcea4f398e37343"
 
 DEPENDS = "plymouth"
 
-SRC_URI = "https://www.freedesktop.org/software/plymouth/releases/plymouth-${PV}.tar.xz"
+PLYMOUTH_VERSION = "24.004.60"
+
+SRC_URI = "https://www.freedesktop.org/software/plymouth/releases/plymouth-${PLYMOUTH_VERSION}.tar.xz"
 # find current sum by running wget https://www.freedesktop.org/software/plymouth/releases/plymouth-24.004.60.tar.xz && sha256sum plymouth-24.004.60.tar.xz
 SRC_URI[sha256sum] = "f3f7841358c98f5e7b06a9eedbdd5e6882fd9f38bbd14a767fb083e3b55b1c34"
 
