@@ -17,7 +17,6 @@ do_install() {
         ${D}${datadir}/plymouth/themes/ocarina-splash/
     install -m 0644 ${WORKDIR}/OcarinaOS.png \
         ${D}${datadir}/plymouth/themes/ocarina-splash/
-    install -d ${D}${sysconfdir}/plymouth
 }
 
 FILES:${PN} = "${datadir}/plymouth/themes/ocarina-splash \
