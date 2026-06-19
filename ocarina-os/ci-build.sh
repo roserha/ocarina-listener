@@ -36,3 +36,10 @@ bitbake core-image-base
 
 rm ~/work/core-image-base-raspberrypi*-64.rootfs-*.wic.* || true
 cp ~/my-build/tmp/deploy/images/raspberrypi*/core-image-base-raspberrypi*-64.rootfs-*.wic.* ~/work/
+
+# Also package it for archival purposes!
+
+VERSION=$(grep DISTRO_VERSION /home/build/work/meta-ocarina/conf/distro/ocarinaos.conf | cut -d'"' -f2 | tr '.' '-')
+tar -cJf /home/build/work/OcarinaOSv${VERSION}.tar.xz \
+    /home/build/work/core-image-base-raspberrypi3-64.rootfs-*.wic.bmap \
+    /home/build/work/core-image-base-raspberrypi3-64.rootfs-*.wic.bz2

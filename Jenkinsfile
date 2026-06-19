@@ -48,9 +48,21 @@ pipeline {
         stage('Flash SD Card') {
             steps {
                 sh '''
-                    umount /dev/mmcblk0p* || true
-                    sudo bmaptool copy core-image-base-raspberrypi3-64.rootfs-*.wic.bz2 /dev/mmcblk0
+                    sudo umount /dev/mmcblk0p* || true
+                    IMAGE=$(ls core-image-base-raspberrypi3-64.rootfs-*.wic.bz2)
+                    BMAP=$(ls core-image-base-raspberrypi3-64.rootfs-*.wic.bmap 2>/dev/null || true)
+                    if [ -n "$BMAP" ]; then
+                        sudo bmaptool copy --bmap $BMAP $IMAGE /dev/mmcblk0
+                    else
+                        sudo bmaptool copy $IMAGE /dev/mmcblk0
+                    fi
                 '''
+            }
+        }
+
+        stage('Archive Build') {
+            steps {
+                archiveArtifacts artifacts: 'OcarinaOS*.tar.xz', fingerprint: true
             }
         }
     }
