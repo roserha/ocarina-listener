@@ -11,7 +11,7 @@ SRC_URI = "https://www.freedesktop.org/software/plymouth/releases/plymouth-${PLY
 # find current sum by running wget https://www.freedesktop.org/software/plymouth/releases/plymouth-24.004.60.tar.xz && sha256sum plymouth-24.004.60.tar.xz
 SRC_URI[sha256sum] = "f3f7841358c98f5e7b06a9eedbdd5e6882fd9f38bbd14a767fb083e3b55b1c34"
 
-S = "${WORKDIR}/plymouth-${PV}"
+S = "${WORKDIR}/plymouth-${PLYMOUTH_VERSION}"
 
 inherit meson pkgconfig
 
