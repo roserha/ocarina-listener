@@ -47,6 +47,9 @@ pipeline {
         }
 
         stage('Flash SD Card') {
+            when {
+                expression { sh(script: 'test -b /dev/mmcblk0', returnStatus: true) == 0 }
+            }
             steps {
                 sh '''
                     sudo umount /dev/mmcblk0p* || true
