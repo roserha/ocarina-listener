@@ -17,9 +17,9 @@ inherit meson pkgconfig
 
 # only build the script plugin, nothing else
 EXTRA_OEMESON = " \
-    -Dgtk=disabled \
-    -Dlogo=disabled \
-    -Ddrm=disabled \
+    -Dgtk=false \
+    -Dlogo=false \
+    -Ddrm=false \
     -Dsystemd-integration=false \
     -Dplugindir=${libdir}/plymouth \
 "
