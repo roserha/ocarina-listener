@@ -62,7 +62,7 @@ pipeline {
 
         stage('Archive Build') {
             steps {
-                archiveArtifacts artifacts: 'OcarinaOS*.tar.xz', fingerprint: true
+                archiveArtifacts artifacts: 'ocarina-os/OcarinaOS*.tar.xz', fingerprint: true
             }
         }
     }
