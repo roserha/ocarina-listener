@@ -75,7 +75,7 @@ EOF
 plymouth quit
 EOF
     chmod 0755 ${D}${sysconfdir}/init.d/plymouth-quit
-    ln -s ../init.d/plymouth-quit ${D}${sysconfdir}/rc5.d/S99plymouth-quit
+    ln -s ../init.d/plymouth-quit ${D}${sysconfdir}/rc5.d/S08plymouth-quit
 }
 
 FILES:${PN}:append = " ${sysconfdir}/profile.d/motd.sh \
