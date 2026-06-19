@@ -1,0 +1,1 @@
+IMAGE_INSTALL:append = " plymouth plymouth-theme-ocarina"
