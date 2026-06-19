@@ -19,6 +19,13 @@ do_install() {
         ${D}${datadir}/plymouth/themes/ocarina-splash/
 }
 
+pkg_postinst:${PN}() {
+#!/bin/sh
+if [ -x /usr/sbin/plymouth-set-default-theme ]; then
+    /usr/sbin/plymouth-set-default-theme ocarina-splash
+fi
+}
+
 FILES:${PN} = "${datadir}/plymouth/themes/ocarina-splash \
                ${datadir}/plymouth/themes/ocarina-splash/ocarina-splash.plymouth \
                ${datadir}/plymouth/themes/ocarina-splash/ocarina-splash.script \

@@ -11,7 +11,8 @@ STATUS=$(pgrep ocarina-listener >/dev/null && echo "Running 🟢" || echo "Stopp
 # attempt to connect to saved wifi
 if [ -f "/etc/wpa_supplicant.conf" ]; then
   echo ">> Connecting to previously saved network '$(cat /etc/wpa_supplicant.conf | grep "ssid" | cut -d '"' -f2)'..."
-  while [ -z "$IP" ] && [ $i -lt 10 ]; do
+  i=0
+  while [ -z "$IP" ] && [ $i -lt 3 ]; do
     IP=$(ip addr show wlan0 2>/dev/null | grep "inet " | awk '{print $2}' | cut -d/ -f1)
     sleep 1
     i=$((i + 1))
