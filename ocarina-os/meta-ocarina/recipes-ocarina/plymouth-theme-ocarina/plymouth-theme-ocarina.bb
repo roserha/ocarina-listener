@@ -18,17 +18,11 @@ do_install() {
     install -m 0644 ${WORKDIR}/OcarinaOS.png \
         ${D}${datadir}/plymouth/themes/ocarina-splash/
     install -d ${D}${sysconfdir}/plymouth
-    cat > ${D}${sysconfdir}/plymouth/plymouthd.conf << 'EOF'
-[Daemon]
-Theme=ocarina-splash
-ShowDelay=0
-EOF
 }
 
 FILES:${PN} = "${datadir}/plymouth/themes/ocarina-splash \
                ${datadir}/plymouth/themes/ocarina-splash/ocarina-splash.plymouth \
                ${datadir}/plymouth/themes/ocarina-splash/ocarina-splash.script \
-               ${datadir}/plymouth/themes/ocarina-splash/OcarinaOS.png \
-               ${sysconfdir}/plymouth/plymouthd.conf"
+               ${datadir}/plymouth/themes/ocarina-splash/OcarinaOS.png"
 
 RDEPENDS:${PN} = "plymouth"
