@@ -20,14 +20,13 @@ fn main() {
         .arg("echo 0 > /sys/class/graphics/fbcon/cursor_blink 2>/dev/null; printf '\\033[?25l' > /dev/tty1 2>/dev/null")
         .status();
 
-    // purple in RGB565: R=51, G=0, B=102
-    let purple = rgb_to_rgb565(51, 0, 102);
-    let purple_bytes = purple.to_le_bytes();
+    let black = rgb_to_rgb565(0, 0, 0);
+    let black_bytes = black.to_le_bytes();
 
     let mut framebuf = vec![0u8; (fb_width * fb_height * 2) as usize];
     for pixel in framebuf.chunks_mut(2) {
-        pixel[0] = purple_bytes[0];
-        pixel[1] = purple_bytes[1];
+        pixel[0] = black_bytes[0];
+        pixel[1] = black_bytes[1];
     }
 
     // load logo
