@@ -17,6 +17,7 @@ INITSCRIPT_PARAMS = "defaults 99"
 do_install() {
     install -d ${D}${bindir}
     install -m 0755 ${WORKDIR}/ocarina-listener ${D}${bindir}/ocarina-listener
+    install -m 0755 ${WORKDIR}/ocarina-splash ${D}${bindir}/ocarina-splash
 
     install -d ${D}${INIT_D_DIR}
     install -m 0755 ${WORKDIR}/ocarina-listener.init ${D}${INIT_D_DIR}/ocarina-listener
