@@ -10,6 +10,6 @@ changewifi() {
   wpa_passphrase "$SSID" "$PSK" >/etc/wpa_supplicant.conf
   echo ">> Connecting..."
   wpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant.conf >/dev/null 2>&1
-  dhcpcd wlan0 >/dev/null 2>&1
-  sleep 3
+  dhcpcd wlan0 >/dev/null 2>&1 &
+  echo ">> Connecting in background, run 'whatsmyip' to check status"
 }

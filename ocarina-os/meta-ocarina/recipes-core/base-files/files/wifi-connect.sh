@@ -10,5 +10,6 @@
 
 if [ -f "/etc/wpa_supplicant.conf" ]; then
   wpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant.conf >/dev/null 2>&1
-  dhcpcd wlan0 >/dev/null 2>&1
+  dhcpcd wlan0 >/dev/null 2>&1 &
+  echo ">> Connecting in background, run 'whatsmyip' to check status"
 fi
