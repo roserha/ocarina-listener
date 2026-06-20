@@ -57,14 +57,6 @@ EOF
     # install wifi-connect script to auto login to wifi if existent
     install -m 0755 ${WORKDIR}/wifi-connect.sh ${D}${sysconfdir}/init.d/wifi-connect
     ln -s ../init.d/wifi-connect ${D}${sysconfdir}/rcS.d/S07wifi-connect
-
-    # fast dhcpcd config
-cat > ${D}${sysconfdir}/dhcpcd.conf << 'EOF'
-timeout 2
-noipv4ll
-noipv6rs
-noipv6
-EOF
 }
 
 FILES:${PN}:append = " ${sysconfdir}/profile.d/motd.sh \
@@ -75,5 +67,4 @@ FILES:${PN}:append = " ${sysconfdir}/profile.d/motd.sh \
                        ${sysconfdir}/init.d/load-modules \
                        ${sysconfdir}/rcS.d/S06load-modules \
                        ${sysconfdir}/init.d/plymouth-start \
-                       ${sysconfdir}/dhcpcd.conf \
                        ${sysconfdir}/init.d/wifi-connect"
