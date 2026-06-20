@@ -14,11 +14,26 @@ fn main() {
     let fb_width: u32 = 1024;
     let fb_height: u32 = 768;
 
-    // hide cursor
+    // wait for fb0 to appear
+    let mut attempts = 0;
+    while !std::path::Path::new("/dev/fb0").exists() && attempts < 50 {
+        std::thread::sleep(std::time::Duration::from_millis(100));
+        attempts += 1;
+    }
+    if !std::path::Path::new("/dev/fb0").exists() {
+        eprintln!("fb0 never appeared!");
+        return;
+    }
+
+    // blank the console and hide cursor
+    let _ = std::fs::write("/sys/class/graphics/fbcon/rotate_all", "0");
     let _ = std::process::Command::new("sh")
         .arg("-c")
-        .arg("echo 0 > /sys/class/graphics/fbcon/cursor_blink 2>/dev/null; printf '\\033[?25l' > /dev/tty1 2>/dev/null")
+        .arg("echo 0 > /sys/class/graphics/fbcon/cursor_blink 2>/dev/null")
         .status();
+    // redirect console output away from framebuffer
+    let _ = std::fs::write("/sys/class/vtconsole/vtcon0/bind", "0");
+    let _ = std::fs::write("/sys/class/vtconsole/vtcon1/bind", "0");
 
     let black = rgb_to_rgb565(0, 0, 0);
     let black_bytes = black.to_le_bytes();
