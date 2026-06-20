@@ -17,6 +17,9 @@ pipeline {
                     cross build --target aarch64-unknown-linux-gnu --release
                     cp ./target/aarch64-unknown-linux-gnu/release/ocarina-listener \
                        ./ocarina-os/meta-ocarina/recipes-ocarina/ocarina-listener/files
+                    RUSTFLAGS="-C target-feature=+crt-static" cross build --target aarch64-unknown-linux-gnu --release --bin ocarina-splash
+                    cp ./target/aarch64-unknown-linux-gnu/release/ocarina-splash \
+                       ./ocarina-os/meta-ocarina/recipes-ocarina/ocarina-listener/files
                 '''
             }
         }

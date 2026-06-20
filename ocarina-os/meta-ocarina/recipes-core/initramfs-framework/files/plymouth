@@ -1,39 +1,7 @@
-#!/bin/sh
-# initramfs plymouth module
-
-plymouth_enabled() {
-    return 0
-}
-
 plymouth_run() {
-    echo "PLYMOUTH: starting" > /dev/console
-    mkdir -p /run/plymouth
-
-    # wait for framebuffer
-    i=0
-    while [ ! -e /dev/fb0 ] && [ $i -lt 20 ]; do
-        sleep 0.1
-        i=$((i + 1))
-    done
-
-    # also wait for DRM device
-    i=0
-    while [ ! -e /dev/dri/card0 ] && [ $i -lt 30 ]; do
-        sleep 0.1
-        i=$((i + 1))
-    done
-
-    echo "PLYMOUTH: devices ready" > /dev/console
-    # wait one second to initialize apparenelty
-    sleep 1
-    plymouthd --mode=boot --pid-file=/run/plymouth/pid
-    plymouth show-splash
-    echo "PLYMOUTH: splash shown" > /dev/console
-    # let's wait even longer i guess
-    sleep 10
-    echo "PLYMOUTH: slept was sloop" > /dev/console
+    /usr/bin/ocarina-splash &
 }
 
 plymouth_stop() {
-    plymouth quit
+    killall ocarina-splash
 }

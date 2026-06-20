@@ -2,6 +2,7 @@ SUMMARY = "Ocarina note listener"
 LICENSE = "CLOSED"
 
 SRC_URI = "file://ocarina-listener \
+           file://ocarina-splash \
            file://ocarina-listener.init"
 
 S = "${WORKDIR}"
@@ -22,4 +23,5 @@ do_install() {
 }
 
 FILES:${PN} = "${bindir}/ocarina-listener \
+               ${bindir}/ocarina-splash \
                ${INIT_D_DIR}/ocarina-listener"
