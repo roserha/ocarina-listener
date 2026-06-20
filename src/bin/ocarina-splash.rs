@@ -183,22 +183,27 @@ fn main() {
             // golden sparkle: RGB(255, 200, 50)
             let a = s.life;
             let (r, g, b) = (255u8, 200u8, 50u8);
-            // draw 2x2
-            for dy in 0..2i32 {
-                for dx in 0..2i32 {
-                    let px = (s.x as i32 + dx) as u32;
-                    let py = (s.y as i32 + dy) as u32;
-                    if px < FB_WIDTH && py < FB_HEIGHT {
-                        let idx = ((py * FB_WIDTH + px) * 2) as usize;
-                        let existing = u16::from_le_bytes([framebuf[idx], framebuf[idx+1]]);
-                        let er = ((existing >> 11) & 0x1F) as u8;
-                        let eg = ((existing >> 5) & 0x3F) as u8;
-                        let eb = (existing & 0x1F) as u8;
-                        let (br, bg, bb) = blend(r, g, b, a, er << 3, eg << 2, eb << 3);
-                        let color = rgb_to_rgb565(br, bg, bb);
-                        let bytes = color.to_le_bytes();
-                        framebuf[idx] = bytes[0];
-                        framebuf[idx+1] = bytes[1];
+            // draw trail + sparkle head
+            let trail_length = 8; // pixels of trail
+            for trail_i in 0..trail_length {
+                let trail_alpha = a * (1.0 - trail_i as f32 / trail_length as f32);
+                let trail_y = (s.y as i32 + trail_i as i32) as u32; // trail goes downward
+                for dy in 0..3i32 {
+                    for dx in 0..3i32 {
+                        let px = (s.x as i32 + dx - 1) as u32;
+                        let py = (trail_y as i32 + dy) as u32;
+                        if px < FB_WIDTH && py < FB_HEIGHT {
+                            let idx = ((py * FB_WIDTH + px) * 2) as usize;
+                            let existing = u16::from_le_bytes([framebuf[idx], framebuf[idx+1]]);
+                            let er = ((existing >> 11) & 0x1F) as u8;
+                            let eg = ((existing >> 5) & 0x3F) as u8;
+                            let eb = (existing & 0x1F) as u8;
+                            let (br, bg, bb) = blend(255, 200, 50, trail_alpha, er << 3, eg << 2, eb << 3);
+                            let color = rgb_to_rgb565(br, bg, bb);
+                            let bytes = color.to_le_bytes();
+                            framebuf[idx] = bytes[0];
+                            framebuf[idx+1] = bytes[1];
+                        }
                     }
                 }
             }
