@@ -1,7 +1,14 @@
+#!/bin/sh
+# initramfs splash module
+
+plymouth_enabled() {
+    return 0
+}
+
 plymouth_run() {
     /usr/bin/ocarina-splash &
 }
 
 plymouth_stop() {
-    killall ocarina-splash
+    killall ocarina-splash 2>/dev/null || true
 }
