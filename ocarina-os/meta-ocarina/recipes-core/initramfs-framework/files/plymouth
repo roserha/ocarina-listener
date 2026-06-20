@@ -6,7 +6,9 @@ plymouth_enabled() {
 }
 
 plymouth_run() {
+    echo "SPLASH: starting" > /dev/console
     /usr/bin/ocarina-splash &
+    echo "SPLASH: started pid $!" > /dev/console
 }
 
 plymouth_stop() {

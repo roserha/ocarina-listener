@@ -58,15 +58,13 @@ EOF
     install -m 0755 ${WORKDIR}/wifi-connect.sh ${D}${sysconfdir}/init.d/wifi-connect
     ln -s ../init.d/wifi-connect ${D}${sysconfdir}/rcS.d/S07wifi-connect
 
-    # start plymouth early in boot
-    cat > ${D}${sysconfdir}/init.d/plymouth-start << 'EOF'
-#!/bin/sh
-plymouthd --mode=boot --attach-to-session
-plymouth show-splash
+    # fast dhcpcd config
+cat > ${D}${sysconfdir}/dhcpcd.conf << 'EOF'
+timeout 2
+noipv4ll
+noipv6rs
+noipv6
 EOF
-    chmod 0755 ${D}${sysconfdir}/init.d/plymouth-start
-    install -d ${D}${sysconfdir}/rcS.d
-    ln -s ../init.d/plymouth-start ${D}${sysconfdir}/rcS.d/S02plymouth-start
 }
 
 FILES:${PN}:append = " ${sysconfdir}/profile.d/motd.sh \
@@ -77,5 +75,5 @@ FILES:${PN}:append = " ${sysconfdir}/profile.d/motd.sh \
                        ${sysconfdir}/init.d/load-modules \
                        ${sysconfdir}/rcS.d/S06load-modules \
                        ${sysconfdir}/init.d/plymouth-start \
-                       ${sysconfdir}/rcS.d/S02plymouth-start \
+                       ${sysconfdir}/dhcpcd.conf \
                        ${sysconfdir}/init.d/wifi-connect"

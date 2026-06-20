@@ -56,9 +56,9 @@ fn main() {
         let py = y_off + y;
         if px < fb_width && py < fb_height {
             let alpha = pixel[3] as f32 / 255.0;
-            let r = (pixel[0] as f32 * alpha * (1.0 - alpha)) as u8;
+            let r = (pixel[0] as f32 * alpha) as u8;
             let g = (pixel[1] as f32 * alpha) as u8;
-            let b = (pixel[2] as f32 * alpha * (1.0 - alpha)) as u8;
+            let b = (pixel[2] as f32 * alpha) as u8;
             let color = rgb_to_rgb565(r, g, b);
             let bytes = color.to_le_bytes();
             let idx = ((py * fb_width + px) * 2) as usize;
