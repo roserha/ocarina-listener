@@ -29,12 +29,13 @@ fn main() {
     let _ = std::fs::write("/sys/class/graphics/fbcon/rotate_all", "0");
     let _ = std::process::Command::new("sh")
         .arg("-c")
-        .arg("echo 0 > /sys/class/graphics/fbcon/cursor_blink 2>/dev/null")
+        .arg("echo 0 > /sys/class/graphics/fbcon/cursor_blink 2>/dev/null; printf '\\033[?25l' > /dev/tty1 2>/dev/null")
         .status();
     // redirect console output away from framebuffer
     let _ = std::fs::write("/sys/class/vtconsole/vtcon0/bind", "0");
     let _ = std::fs::write("/sys/class/vtconsole/vtcon1/bind", "0");
 
+    // set bg color to black
     let black = rgb_to_rgb565(0, 0, 0);
     let black_bytes = black.to_le_bytes();
 
@@ -59,7 +60,7 @@ fn main() {
     let scaled_w = (logo_w as f32 * scale) as u32;
     let scaled_h = (logo_h as f32 * scale) as u32;
 
-    let logo = image::imageops::resize(&logo, scaled_w, scaled_h, image::imageops::FilterType::Lanczos3);
+    let logo = image::imageops::resize(&logo, scaled_w, scaled_h, image::imageops::FilterType::Nearest);
 
     // center
     let x_off = (fb_width - scaled_w) / 2;
