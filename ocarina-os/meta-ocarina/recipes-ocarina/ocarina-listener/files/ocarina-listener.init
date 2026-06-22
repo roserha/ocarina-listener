@@ -19,16 +19,12 @@ start)
     done
 
     echo "Starting ocarina-gui"
-    export XDG_RUNTIME_DIR=/run/user/1000
-    export WAYLAND_DISPLAY=wayland-1
     start-stop-daemon --start --background \
-        --exec /usr/bin/ocarina-gui \
-        --env "XDG_RUNTIME_DIR=/run/user/1000" \
-        --env "WAYLAND_DISPLAY=wayland-1"
+        --exec /usr/bin/ocarina-gui-launcher \
     ;;
 stop)
     echo "Stopping ocarina-gui"
-    start-stop-daemon --stop --exec /usr/bin/ocarina-gui
+    start-stop-daemon --stop --exec /usr/bin/ocarina-gui-launcher
     echo "Stopping ocarina-listener"
     start-stop-daemon --stop --exec /usr/bin/ocarina-listener
     ;;

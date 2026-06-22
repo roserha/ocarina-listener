@@ -3,6 +3,7 @@ LICENSE = "CLOSED"
 
 SRC_URI = "file://ocarina-listener \
            file://ocarina-gui \
+           file://ocarina-gui-launcher \
            file://ocarina-splash \
            file://ocarina-listener.init"
 
@@ -20,6 +21,7 @@ do_install() {
     install -m 0755 ${WORKDIR}/ocarina-listener ${D}${bindir}/ocarina-listener
     install -m 0755 ${WORKDIR}/ocarina-splash ${D}${bindir}/ocarina-splash
     install -m 0755 ${WORKDIR}/ocarina-gui ${D}${bindir}/ocarina-gui
+    install -m 0755 ${WORKDIR}/ocarina-gui-launcher ${D}${bindir}/ocarina-gui-launcher
 
     install -d ${D}${INIT_D_DIR}
     install -m 0755 ${WORKDIR}/ocarina-listener.init ${D}${INIT_D_DIR}/ocarina-listener
@@ -27,6 +29,7 @@ do_install() {
 
 FILES:${PN} = "${bindir}/ocarina-listener \
                ${bindir}/ocarina-gui \
+               ${bindir}/ocarina-gui-launcher \
                ${bindir}/ocarina-splash \
                ${INIT_D_DIR}/ocarina-listener"
 
