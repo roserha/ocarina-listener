@@ -1,4 +1,5 @@
 SUMMARY = "InitRAMFS support for Ocarina Splash Screen"
+LICENSE = "CLOSED"
 SRC_URI = "file://ocarina_splash"
 
 S = "${WORKDIR}"
