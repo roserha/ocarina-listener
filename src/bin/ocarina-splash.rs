@@ -104,7 +104,7 @@ fn main() {
     let mut fb = OpenOptions::new().write(true).open("/dev/fb0").expect("fb0");
 
     let start = Instant::now();
-    let mut frame: u64 = 0;
+    let mut _frame: u64 = 0;
 
     loop {
         let frame_start = Instant::now();
@@ -215,7 +215,7 @@ fn main() {
         fb.seek(SeekFrom::Start(0)).ok();
         fb.write_all(&framebuf).ok();
 
-        frame += 1;
+        _frame += 1;
         let elapsed = frame_start.elapsed().as_millis() as u64;
         if elapsed < FRAME_MS {
             std::thread::sleep(Duration::from_millis(FRAME_MS - elapsed));
