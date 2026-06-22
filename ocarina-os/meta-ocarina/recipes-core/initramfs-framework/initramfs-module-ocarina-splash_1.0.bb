@@ -6,7 +6,7 @@ SRC_URI = "file://ocarina-splash \
 
 S = "${WORKDIR}"
 
-inherit allarch
+# inherit allarch
 
 do_install() {
     install -d ${D}/init.d
