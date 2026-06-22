@@ -25,7 +25,7 @@ pipeline {
                     cd ./ocarina-gui
                     cross build --target aarch64-unknown-linux-gnu --release
                     cp ./target/aarch64-unknown-linux-gnu/release/ocarina-gui \
-                       ./ocarina-os/meta-ocarina/recipes-ocarina/ocarina-listener/files
+                       ./../ocarina-os/meta-ocarina/recipes-ocarina/ocarina-listener/files
                     cd ..
                 '''
             }
