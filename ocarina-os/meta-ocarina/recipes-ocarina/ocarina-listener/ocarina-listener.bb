@@ -29,3 +29,5 @@ FILES:${PN} = "${bindir}/ocarina-listener \
                ${bindir}/ocarina-gui \
                ${bindir}/ocarina-splash \
                ${INIT_D_DIR}/ocarina-listener"
+
+RDEPENDS:${PN} += "fontconfig"
