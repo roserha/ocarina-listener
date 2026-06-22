@@ -16,7 +16,7 @@ do_install:append() {
     # add sysfs to fstab so it gets mounted on boot
     echo "sysfs                /sys                 sysfs      defaults              0  0" >> ${D}${sysconfdir}/fstab
 
-    # install the pretty login screen and os info files
+    # install the pretty login screen and os info files for serial
     install -m 0644 ${WORKDIR}/issue ${D}${sysconfdir}/issue
     install -m 0644 ${WORKDIR}/issue ${D}${sysconfdir}/issue.net
     

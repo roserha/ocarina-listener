@@ -1,3 +1,10 @@
+// This is the only code I didn't write myself, and relied on LLMs.
+// I personally advocate for knowledge of the code I write, but I
+// don't think that a splash screen that shows up for a few seconds
+// before boot was essential. I might come back to this in the future,
+// but as it currently stands, I didn't hold this as a vital part of the
+// project, unlike the actual GUI interface or the OcarinaOS itself.
+
 use std::fs::OpenOptions;
 use std::io::{Seek, SeekFrom, Write};
 use std::time::{Duration, Instant};

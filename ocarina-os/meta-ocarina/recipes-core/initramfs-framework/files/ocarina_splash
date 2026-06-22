@@ -1,16 +1,16 @@
 #!/bin/sh
 # initramfs splash module
 
-plymouth_enabled() {
+ocarina_splash_enabled() {
     return 0
 }
 
-plymouth_run() {
+ocarina_splash_run() {
     echo "SPLASH: starting" > /dev/console
     /usr/bin/ocarina-splash &
     echo "SPLASH: started pid $!" > /dev/console
 }
 
-plymouth_stop() {
+ocarina_splash_stop() {
     killall ocarina-splash 2>/dev/null || true
 }
