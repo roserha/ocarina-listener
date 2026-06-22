@@ -12,10 +12,12 @@ case "$1" in
 start)
   echo "Starting ocarina-listener"
   start-stop-daemon --start --background --exec /usr/bin/ocarina-listener
+  start-stop-daemon --start --background --exec /usr/bin/ocarina-gui
   ;;
 stop)
   echo "Stopping ocarina-listener"
   start-stop-daemon --stop --exec /usr/bin/ocarina-listener
+  start-stop-daemon --stop --exec /usr/bin/ocarina-gui
   ;;
 *)
   echo "Usage: $0 {start|stop}"

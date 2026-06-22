@@ -9,7 +9,7 @@ pipeline {
                 buildName("ocarina_os_${env.BRANCH_NAME}_${env.BUILD_NUMBER}")
             }
         }
-        stage('Build Rust Binary') {
+        stage('Build Rust Binaries') {
             steps {
                 sh '''
                     export PATH="$HOME/.cargo/bin:$PATH"
@@ -22,6 +22,11 @@ pipeline {
                        ./ocarina-os/meta-ocarina/recipes-ocarina/ocarina-listener/files
                     cp ./target/aarch64-unknown-linux-gnu/release/ocarina-splash \
                        ./ocarina-os/meta-ocarina/recipes-core/initramfs-framework/files
+                    cd ./ocarina-gui
+                    cross build --target aarch64-unknown-linux-gnu --release
+                    cp ./target/aarch64-unknown-linux-gnu/release/ocarina-gui \
+                       ./ocarina-os/meta-ocarina/recipes-ocarina/ocarina-listener/files
+                    cd ..
                 '''
             }
         }

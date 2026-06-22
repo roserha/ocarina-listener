@@ -1,11 +1,29 @@
 import { Button, VerticalBox } from "std-widgets.slint";
 
+component Logo inherits Rectangle {
+    width: 807px;
+    height: 148px;
+
+    Image {
+        source: @image-url("imgs/OcarinaOS.png");
+        width: parent.width;
+        height: parent.height;
+    }
+}
 export component AppWindow inherits Window {
-    in-out property <int> counter: 42;
+    // Set to true when exporting!
+    full-screen: false;
+    preferred-width: 1024px;
+    preferred-height: 600px;
+    in-out property <string> currentlyPlayingSong: "";
     callback request-increase-value();
     VerticalBox {
+        Logo{
+            transform-scale: 0.25;
+        }
+
         Text {
-            text: "Counter: \{root.counter}";
+            text: root.currentlyPlayingSong;
         }
 
         Button {

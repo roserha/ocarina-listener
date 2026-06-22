@@ -12,7 +12,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let ui_handle = ui.as_weak();
         move || {
             let ui = ui_handle.unwrap();
-            ui.set_counter(ui.get_counter() + 1);
+            ui.set_currentlyPlayingSong(slint::SharedString::from("i am mOTHER.FUCKING. DIS. BELIEF. PAPYRUS"));
         }
     });
 
