@@ -5,22 +5,35 @@
 # Required-Stop:
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Ocarina listener
+# Short-Description: Ocarina listener and GUI
 ### END INIT INFO
 
 case "$1" in
 start)
-  echo "Starting ocarina-listener"
-  start-stop-daemon --start --background --exec /usr/bin/ocarina-listener
-  start-stop-daemon --start --background --exec /usr/bin/ocarina-gui
-  ;;
+    echo "Starting ocarina-listener"
+    start-stop-daemon --start --background --exec /usr/bin/ocarina-listener
+
+    echo "Waiting for wayland socket..."
+    while [ ! -S /run/user/1000/wayland-1 ]; do
+        sleep 0.5
+    done
+
+    echo "Starting ocarina-gui"
+    export XDG_RUNTIME_DIR=/run/user/1000
+    export WAYLAND_DISPLAY=wayland-1
+    start-stop-daemon --start --background \
+        --exec /usr/bin/ocarina-gui \
+        --env "XDG_RUNTIME_DIR=/run/user/1000" \
+        --env "WAYLAND_DISPLAY=wayland-1"
+    ;;
 stop)
-  echo "Stopping ocarina-listener"
-  start-stop-daemon --stop --exec /usr/bin/ocarina-listener
-  start-stop-daemon --stop --exec /usr/bin/ocarina-gui
-  ;;
+    echo "Stopping ocarina-gui"
+    start-stop-daemon --stop --exec /usr/bin/ocarina-gui
+    echo "Stopping ocarina-listener"
+    start-stop-daemon --stop --exec /usr/bin/ocarina-listener
+    ;;
 *)
-  echo "Usage: $0 {start|stop}"
-  exit 1
-  ;;
+    echo "Usage: $0 {start|stop}"
+    exit 1
+    ;;
 esac

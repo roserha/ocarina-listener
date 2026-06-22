@@ -12,9 +12,10 @@ component Logo inherits Rectangle {
 }
 export component AppWindow inherits Window {
     // Set to true when exporting!
-    full-screen: false;
+    full-screen: true;
     preferred-width: 1024px;
     preferred-height: 600px;
+    background: #3f2954;
     in-out property <string> currentlyPlayingSong: "";
     callback request-increase-value();
     VerticalBox {
