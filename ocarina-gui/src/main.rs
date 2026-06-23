@@ -52,7 +52,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let ui_handle_internal = ui.as_weak();
         move || {
             let ui = ui_handle_internal.unwrap();
-            ui.set_currentlyPlayingSong(slint::SharedString::from("i am mOTHER.FUCKING. DIS. BELIEF. PAPYRUS"));
+            ui.set_currentlyPlayingSong(slint::SharedString::from("helllo world"));
         }
     });
 
