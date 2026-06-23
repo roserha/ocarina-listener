@@ -1,37 +1,82 @@
-import { Button, VerticalBox } from "std-widgets.slint";
+import { Button, VerticalBox, HorizontalBox } from "std-widgets.slint";
+import { NoteCanvas } from "components/note-canvas.slint";
 
 component Logo inherits Rectangle {
-    width: 807px;
-    height: 148px;
+    width: 100%;
 
     Image {
-        source: @image-url("imgs/OcarinaOS.png");
-        width: parent.width;
-        height: parent.height;
+        source: @image-url("components/imgs/OcarinaOS.svg");
+        width: 256px;
+        height: 46.94919455px;
     }
 }
+
+////////////////////////////////////////////
+// App Window
+////////////////////////////////////////////
+
 export component AppWindow inherits Window {
     // Set to true when exporting!
     full-screen: true;
-    preferred-width: 1024px;
+    max-width: 1024px;
+    min-height: 600px;
+    min-width: 1024px;
     preferred-height: 600px;
+    preferred-width: 1024px;
+    max-height: 600px;
     background: #3f2954;
-    in-out property <string> currentlyPlayingSong: "";
+    in-out property <string> currentlyPlayingSong: "lorem ipsum dolor sit amett";
     callback request-increase-value();
+
+    
     VerticalBox {
-        Logo{
-            transform-scale: 0.25;
-        }
+        ////////////////////////////////////////////
+        // Top Panel
+        ////////////////////////////////////////////
 
-        Text {
-            text: root.currentlyPlayingSong;
-        }
-
-        Button {
-            text: "Increase value";
-            clicked => {
-                root.request-increase-value();
+        HorizontalBox {
+            Button {
+                text: "Info";
+                clicked => {
+                    root.request-increase-value();
+                }
             }
+            Text {
+                width: 800px;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+                text: root.currentlyPlayingSong;
+            }
+            Button {
+                text: "Settings";
+                clicked => {
+                    root.request-increase-value();
+                }
+            }
+        }
+        
+
+        ////////////////////////////////////////////
+        // Note Panel
+        ////////////////////////////////////////////
+        
+        NoteCanvas {
+            Notes: [
+                {note: "F4", sharp: false},
+                {note: "A4", sharp: false},
+                {note: "C4", sharp: false},
+                {note: "E4", sharp: false}
+            ];
+
+            Listening: true;
+        }
+
+        ////////////////////////////////////////////
+        // Logo Panel
+        ////////////////////////////////////////////
+
+        Logo{
+            
         }
     }
 }

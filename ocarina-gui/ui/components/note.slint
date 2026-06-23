@@ -1,0 +1,49 @@
+export component Note inherits Rectangle {
+    width: 125px;
+    height: 400px;
+
+    in property <string> note: "C4";
+    in property <bool> sharp: false;
+
+    if note == "C4" : Image {
+        source: @image-url("imgs/notes/C4.svg");
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    if note == "D4" : Image {
+        source: @image-url("imgs/notes/D4.svg");
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    if note == "E4" : Image {
+        source: @image-url("imgs/notes/E4.svg");
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    if note == "F4" : Image {
+        source: @image-url("imgs/notes/F4.svg");
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    if note == "G4" : Image {
+        source: @image-url("imgs/notes/G4.svg");
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    if note == "A4" : Image {
+        source: @image-url("imgs/notes/A4.svg");
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    if note == "B4" : Image {
+        source: @image-url("imgs/notes/B4.svg");
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+}

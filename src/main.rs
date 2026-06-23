@@ -15,6 +15,8 @@ use rppal::{
     hal::Delay};
 
 use std::sync::mpsc;
+use std::os::unix::net::{UnixStream,UnixListener};
+use std::io::Write;
 
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -52,29 +54,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Set up 16-segment display MPSC channel to not throttle audio thread
     let (tx, rx) = mpsc::channel::<notes::DisplayData>();
+    let mut sender = UnixStream::connect("/tmp/ocarina-listener.sock").unwrap();
 
     drop(term);
 
     std::thread::spawn(move || {
         let term = Term::stdout();
-        let mut lcd_i2c = I2c::new().expect("Error creating I2c!!"); 
-
-        let mut delay = Delay::new();
-
-        let mut lcd = match lcd_lcm1602_i2c::sync_lcd::Lcd::new(&mut lcd_i2c, &mut delay)
-            .with_address(0x27)
-            .with_cursor_on(false)
-            .with_rows(2)
-            .init() {
-                Ok(l) => l,
-                Err(_) => panic!("Error creating LCD!!")
-        };
-
-        lcd.clear().unwrap();
-        lcd.set_cursor(1,0).unwrap();
-        lcd.write_str("Ocarina Listener").unwrap();
-
-        let mut last_notes_played: Vec<String> = Vec::new();
 
         while let Ok(noteinfo) = rx.recv() {
             // Reset terminal cursor position
@@ -89,7 +74,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("Frequency {}\nSemitones {}\nNote {}",
             Style::new().green().bold().apply_to(noteinfo.freq),
             Style::new().red().bold().apply_to(noteinfo.semitones),
-            Style::new().blue().bold().apply_to(noteinfo.note_name));
+            Style::new().blue().bold().apply_to(noteinfo.note_name.clone()));
         
             for note in noteinfo.notes_played.iter(){
                 print!("{} ", Style::new().yellow().bold().apply_to(note));
@@ -97,22 +82,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         
             print!("\n");
 
-            // Print data on LCD display
+            // Send all the data via UNIX Stream to GUI
+            let mut noteinfo_playednotes = String::new();
 
-            if last_notes_played != noteinfo.notes_played {
-                lcd.set_cursor(0,0).unwrap();
-            
-                for note in noteinfo.notes_played.iter().rev().take(4).rev(){
-                    lcd.write_str(format!("{:^4}", note).as_str()).unwrap();
-                }
-            
-                lcd.set_cursor(1,0).unwrap();
-                lcd.write_str(format!("Ocarina{}Listener", if noteinfo.freq < 0.01 { " " } else { "*" }).as_str()).unwrap();
+            for note in noteinfo.notes_played.iter().rev().take(4).rev(){
+                noteinfo_playednotes.push_str(format!("{:^4}", note).as_str());
             }
 
-            last_notes_played = noteinfo.notes_played.clone();
-        
- 
+            sender.write_all(format!("{}\n{}\n{}\n{}", noteinfo.freq, noteinfo.semitones, noteinfo.note_name, noteinfo_playednotes).as_bytes()).unwrap(); 
         }
     });
 

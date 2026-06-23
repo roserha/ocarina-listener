@@ -5,7 +5,18 @@ FROM ghcr.io/cross-rs/aarch64-unknown-linux-gnu:edge
 RUN dpkg --add-architecture arm64 && \
     apt-get update && \
     apt-get install --assume-yes --no-install-recommends \
-    libasound2-dev:arm64 \
+    # cross compiler
+    gcc-aarch64-linux-gnu \
+    # arm64 target libs
+    libfontconfig1-dev:arm64 \
+    libfreetype6-dev:arm64 \
+    libxkbcommon-dev:arm64 \
+    libinput-dev:arm64 \
+    libgbm-dev:arm64 \
+    libwayland-dev:arm64 \
+    libdrm-dev:arm64 \
+    libegl1-mesa-dev:arm64 \
+    # host tools (no arch suffix)
     pkg-config
 
 # Configure pkg-config to search the target filesystem instead of the host

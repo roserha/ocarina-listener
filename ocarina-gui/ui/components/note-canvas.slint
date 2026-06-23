@@ -1,0 +1,35 @@
+import { HorizontalBox } from "std-widgets.slint";
+import { Note } from "note.slint"; 
+
+export component NoteCanvas inherits Rectangle {
+    width: 100%;
+    height: 450px;
+
+    in-out property <[{note: string, sharp: bool}]> Notes;
+    in-out property <bool> Listening: false;
+
+    Image {
+        source: @image-url("imgs/NoteCanvasBG.svg");
+        horizontal-alignment: center;
+        vertical-alignment: center;
+        width: 800px;
+        height: 400px;
+
+        HorizontalBox {
+            width: 600px;
+            padding-left: 45px;
+
+            for NoteType in root.Notes: repeatedNote := Note {
+                note: NoteType.note;
+                sharp: NoteType.sharp;
+            }
+
+            if root.Listening: pause := Image {
+                width: 125px;
+                height: 400px;
+                source: @image-url("imgs/Pause.svg");
+            }
+        }
+    }
+
+}

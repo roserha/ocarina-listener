@@ -15,3 +15,9 @@ image = "0.25"
 [[bin]]
 name = "ocarina-splash"
 path = "src/bin/ocarina-splash.rs"
+
+[workspace]
+members = [
+    ".",
+    "ocarina-gui"
+]
