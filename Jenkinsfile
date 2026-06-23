@@ -12,21 +12,20 @@ pipeline {
         stage('Build Rust Binaries') {
             steps {
                 sh '''
+                    echo "Exporting Rust things"
                     export PATH="$HOME/.cargo/bin:$PATH"
                     rustup default stable
                     cross build --target aarch64-unknown-linux-gnu --release
                     cp ./target/aarch64-unknown-linux-gnu/release/ocarina-listener \
                        ./ocarina-os/meta-ocarina/recipes-ocarina/ocarina-listener/files
+                    cp ./target/aarch64-unknown-linux-gnu/release/ocarina-gui \
+                       ./ocarina-os/meta-ocarina/recipes-ocarina/ocarina-listener/files
+
                     RUSTFLAGS="-C target-feature=+crt-static" cross build --target aarch64-unknown-linux-gnu --release --bin ocarina-splash
                     cp ./target/aarch64-unknown-linux-gnu/release/ocarina-splash \
                        ./ocarina-os/meta-ocarina/recipes-ocarina/ocarina-listener/files
                     cp ./target/aarch64-unknown-linux-gnu/release/ocarina-splash \
                        ./ocarina-os/meta-ocarina/recipes-core/initramfs-framework/files
-                    cd ./ocarina-gui
-                    cross build --target aarch64-unknown-linux-gnu --release
-                    cp ./target/aarch64-unknown-linux-gnu/release/ocarina-gui \
-                       ./../ocarina-os/meta-ocarina/recipes-ocarina/ocarina-listener/files
-                    cd ..
                 '''
             }
         }
