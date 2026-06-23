@@ -1,1 +1,1 @@
-./scripts/build-off-target.sh && ssh root@$(cat ./scripts/secrets/RPIIP.txt) "sudo reboot"
+./scripts/build-off-target.sh && ssh root@$1 "sudo reboot"

@@ -3,7 +3,6 @@ export component Note inherits Rectangle {
     height: 400px;
 
     in property <string> note: "C4";
-    in property <bool> sharp: false;
 
     if note == "C4" : Image {
         source: @image-url("imgs/notes/C4.svg");
@@ -11,8 +10,20 @@ export component Note inherits Rectangle {
         vertical-alignment: center;
     }
 
+    if note == "C#4" : Image {
+        source: @image-url("imgs/notes/C#4.svg");
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
     if note == "D4" : Image {
         source: @image-url("imgs/notes/D4.svg");
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    if note == "D#4" : Image {
+        source: @image-url("imgs/notes/D#4.svg");
         horizontal-alignment: center;
         vertical-alignment: center;
     }
@@ -29,14 +40,32 @@ export component Note inherits Rectangle {
         vertical-alignment: center;
     }
 
+    if note == "F#4" : Image {
+        source: @image-url("imgs/notes/F#4.svg");
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
     if note == "G4" : Image {
         source: @image-url("imgs/notes/G4.svg");
         horizontal-alignment: center;
         vertical-alignment: center;
     }
 
+    if note == "G#4" : Image {
+        source: @image-url("imgs/notes/G#4.svg");
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
     if note == "A4" : Image {
         source: @image-url("imgs/notes/A4.svg");
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    if note == "A#4" : Image {
+        source: @image-url("imgs/notes/A#4.svg");
         horizontal-alignment: center;
         vertical-alignment: center;
     }

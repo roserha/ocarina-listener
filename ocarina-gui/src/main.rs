@@ -6,6 +6,8 @@ use std::ptr::read;
 use std::sync::mpsc;
 use std::os::unix::net::{UnixStream,UnixListener};
 use std::io::{BufRead, BufReader};
+use slint::{Model, ModelRc, VecModel};
+use std::rc::Rc;
 
 pub struct DisplayData {
     pub freq: f32,
@@ -23,26 +25,17 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     // Set up display info MPSC channel to run parallel with UI thread
     let (tx, rx) = mpsc::channel::<String>();
+    let _ = std::fs::remove_file("/tmp/ocarina-listener.sock");
     let listener = UnixListener::bind("/tmp/ocarina-listener.sock").unwrap();
 
     std::thread::spawn(move || {
-        for stream in listener.incoming() {
-            match stream {
-                Ok(stream_content) => {
-                    let read_stream = BufReader::new(stream_content).lines();
-                    let mut complete_stream = String::new();
-
-                    for stream_line in read_stream {
-                        match stream_line {
-                            Ok(line) => complete_stream.push_str(&line.to_string()),
-                            Err(_) => {}
-                        }
-                    }
-
-                    tx.send(complete_stream).ok();
-                }
-                Err(err) => {
-                    print!("Error in MPSC GUI Channel: {}", err);
+        if let Ok((stream, _)) = listener.accept() {
+            let stream_reader = BufReader::new(stream);
+            
+            for stream_line in stream_reader.lines() {
+                match stream_line {
+                    Ok(line) => {tx.send(line).ok();}
+                    Err(_) => {}
                 }
             }
         }
@@ -64,7 +57,18 @@ fn main() -> Result<(), Box<dyn Error>> {
         move || {
             if let Ok(msg) = rx.try_recv() {
                 if let Some(ui) = ui_handle.upgrade() {
-                    ui.set_currentlyPlayingSong(msg.into());
+                    let raw_msgs = msg.split("||").collect::<Vec<&str>>();
+
+                    
+                    let played_notes:Vec<slint::SharedString> = raw_msgs[3].split(" ").map(|s| s.trim().into()).collect();
+                    
+                    let played_notes_rc = Rc::new(VecModel::from(played_notes));
+                    
+                    ui.set_playedNotes(ModelRc::new(played_notes_rc.clone()));
+
+                    ui.set_listening(raw_msgs[2] != "--");
+
+                    ui.set_currentlyPlayingSong(raw_msgs[2].into());
                 }
             }
         },

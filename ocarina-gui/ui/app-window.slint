@@ -25,7 +25,9 @@ export component AppWindow inherits Window {
     preferred-width: 1024px;
     max-height: 600px;
     background: #3f2954;
-    in-out property <string> currentlyPlayingSong: "lorem ipsum dolor sit amett";
+    in-out property <string> currentlyPlayingSong: "TEsting again";
+    in-out property <[string]> playedNotes;
+    in-out property <bool> listening: false;
     callback request-increase-value();
 
     
@@ -61,14 +63,9 @@ export component AppWindow inherits Window {
         ////////////////////////////////////////////
         
         NoteCanvas {
-            Notes: [
-                {note: "F4", sharp: false},
-                {note: "A4", sharp: false},
-                {note: "C4", sharp: false},
-                {note: "E4", sharp: false}
-            ];
+            Notes: root.playedNotes;
 
-            Listening: true;
+            Listening: root.listening;
         }
 
         ////////////////////////////////////////////

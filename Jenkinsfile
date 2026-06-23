@@ -15,7 +15,7 @@ pipeline {
                     echo "Exporting Rust things"
                     export PATH="$HOME/.cargo/bin:$PATH"
                     rustup default stable
-                    cross build --target aarch64-unknown-linux-gnu --release
+                    cross build --target aarch64-unknown-linux-gnu --release --workspace
                     cp ./target/aarch64-unknown-linux-gnu/release/ocarina-listener \
                        ./ocarina-os/meta-ocarina/recipes-ocarina/ocarina-listener/files
                     cp ./target/aarch64-unknown-linux-gnu/release/ocarina-gui \

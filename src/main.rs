@@ -54,7 +54,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Set up 16-segment display MPSC channel to not throttle audio thread
     let (tx, rx) = mpsc::channel::<notes::DisplayData>();
-    let mut sender = UnixStream::connect("/tmp/ocarina-listener.sock").unwrap();
+    let mut sender = loop {
+        match UnixStream::connect("/tmp/ocarina-listener.sock") {
+            Ok(stream) => break stream,
+            Err(_) => {
+                std::thread::sleep(std::time::Duration::from_millis(500));
+            }
+        }
+    };
 
     drop(term);
 
@@ -86,10 +93,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let mut noteinfo_playednotes = String::new();
 
             for note in noteinfo.notes_played.iter().rev().take(4).rev(){
-                noteinfo_playednotes.push_str(format!("{:^4}", note).as_str());
+                noteinfo_playednotes.push_str(format!("{} ", note).as_str());
             }
 
-            sender.write_all(format!("{}\n{}\n{}\n{}", noteinfo.freq, noteinfo.semitones, noteinfo.note_name, noteinfo_playednotes).as_bytes()).unwrap(); 
+            if noteinfo_playednotes.len() > 0 {
+                noteinfo_playednotes.pop();
+            }
+
+            sender.write_all(format!("{}||{}||{}||{}\n", noteinfo.freq, noteinfo.semitones, noteinfo.note_name, noteinfo_playednotes).as_bytes()).unwrap();
+            sender.flush().unwrap(); 
         }
     });
 
