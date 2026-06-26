@@ -13,7 +13,7 @@ const LOGO_BYTES: &[u8] = include_bytes!("../../imgs/OcarinaOS.png");
 const GLOW_BYTES: &[u8] = include_bytes!("../../imgs/OcarinaOS-Blur.png");
 
 const FB_WIDTH: u32 = 1024;
-const FB_HEIGHT: u32 = 768;
+const FB_HEIGHT: u32 = 600;
 const FPS: u64 = 30;
 const FRAME_MS: u64 = 1000 / FPS;
 const MAX_SPARKLES: usize = 100;
