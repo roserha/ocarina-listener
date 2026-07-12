@@ -1,5 +1,7 @@
 import { Button, VerticalBox, HorizontalBox } from "std-widgets.slint";
 import { NoteCanvas } from "components/note-canvas.slint";
+import { Settings } from "components/settings-menu.slint";
+import { Info } from "components/info-menu.slint";
 
 component Logo inherits Rectangle {
     width: 100%;
@@ -25,9 +27,15 @@ export component AppWindow inherits Window {
     preferred-width: 1024px;
     max-height: 600px;
     background: #3f2954;
+
     in-out property <string> currentlyPlayingSong: "TEsting again";
     in-out property <[string]> playedNotes;
     in-out property <bool> listening: false;
+    in-out property <string> ipAddy: "172.21.4.smth";
+    in-out property <string> OcarinaOSVersion;
+    in-out property <string> OcarinaGUIVersion;
+    in-out property <string> OcarinaListenerVersion;
+
     callback request-increase-value();
 
     
@@ -40,7 +48,7 @@ export component AppWindow inherits Window {
             Button {
                 text: "Info";
                 clicked => {
-                    root.request-increase-value();
+                    infoPopup.show();
                 }
             }
             Text {
@@ -52,7 +60,7 @@ export component AppWindow inherits Window {
             Button {
                 text: "Settings";
                 clicked => {
-                    root.request-increase-value();
+                    settingsPopup.show();
                 }
             }
         }
@@ -74,6 +82,16 @@ export component AppWindow inherits Window {
 
         Logo{
             
+        }
+
+        settingsPopup := Settings {
+            ipAddress: root.ipAddy;
+        }
+
+        infoPopup := Info {
+            osVersion: OcarinaOSVersion;
+            guiVersion: OcarinaGUIVersion;
+            listenerVersion: OcarinaListenerVersion;
         }
     }
 }

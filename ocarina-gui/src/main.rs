@@ -8,6 +8,7 @@ use std::os::unix::net::{UnixStream,UnixListener};
 use std::io::{BufRead, BufReader};
 use slint::{Model, ModelRc, VecModel};
 use std::rc::Rc;
+use std::process::Command;
 
 pub struct DisplayData {
     pub freq: f32,
@@ -58,7 +59,6 @@ fn main() -> Result<(), Box<dyn Error>> {
             if let Ok(msg) = rx.try_recv() {
                 if let Some(ui) = ui_handle.upgrade() {
                     let raw_msgs = msg.split("||").collect::<Vec<&str>>();
-
                     
                     let played_notes:Vec<slint::SharedString> = raw_msgs[3].split(" ").map(|s| s.trim().into()).collect();
                     
@@ -69,6 +69,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                     ui.set_listening(raw_msgs[2] != "--");
 
                     ui.set_currentlyPlayingSong(raw_msgs[2].into());
+
+                    ui.set_ipAddy(slint::SharedString::from(String::from_utf8(
+                        Command::new("whatsmyip").output().expect("Err when unpacking whatsmyip cmd").stdout
+                    ).expect("err")));
                 }
             }
         },
