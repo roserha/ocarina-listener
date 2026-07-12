@@ -1,6 +1,18 @@
 # Derive from the official cross-rs image for your target
 FROM ghcr.io/cross-rs/aarch64-unknown-linux-gnu:edge
 
+# Add the arm64 architecture
+RUN dpkg --add-architecture arm64
+
+# Update existing standard repositories to focus only on amd64
+RUN sed -i 's/deb http/deb [arch=amd64] http/g' /etc/apt/sources.list
+
+# Add the official Ubuntu Ports repositories for arm64 packages
+# Note: Change "jammy" to your specific Ubuntu version codename if not using 22.04 (e.g., focal, noble)
+RUN echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports jammy main restricted universe multiverse" >> /etc/apt/sources.list && \
+    echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports jammy-updates main restricted universe multiverse" >> /etc/apt/sources.list && \
+    echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports jammy-security main restricted universe multiverse" >> /etc/apt/sources.list
+
 # Enable multi-arch packages and install target ALSA dependencies
 RUN dpkg --add-architecture arm64 && \
     apt-get update && \
