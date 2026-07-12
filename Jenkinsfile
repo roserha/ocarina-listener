@@ -13,6 +13,7 @@ pipeline {
         stage('Build Rust Binaries') {
             steps {
                 sh '''
+                    sudo docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
                     echo "Exporting Rust things"
                     export PATH="$HOME/.cargo/bin:$PATH"
                     rustup default stable
