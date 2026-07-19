@@ -33,7 +33,7 @@ pipeline {
                     cp ./target/aarch64-unknown-linux-gnu/release/ocarina-splash \
                        ./ocarina-os/meta-ocarina/recipes-core/initramfs-framework/files
 
-                    wpa_passphrase ${params.WIFI-NAME} ${params.WIFI-PWD} > ./ocarina-os/meta-ocarina/recipes-core/base-files/files/wpa_supplicant.conf
+                    wpa_passphrase ${params['WIFI-NAME']} ${params.['WIFI-PWD']} > ./ocarina-os/meta-ocarina/recipes-core/base-files/files/wpa_supplicant.conf
                 '''
             }
         }
