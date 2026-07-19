@@ -16,7 +16,7 @@ pipeline {
         }
         stage('Build Rust Binaries') {
             steps {
-                sh """
+                sh '''
                     sudo docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
                     echo "Exporting Rust things"
                     export PATH="$HOME/.cargo/bin:$PATH"
@@ -33,8 +33,8 @@ pipeline {
                     cp ./target/aarch64-unknown-linux-gnu/release/ocarina-splash \
                        ./ocarina-os/meta-ocarina/recipes-core/initramfs-framework/files
 
-                    wpa_passphrase ${params.WIFINAME} ${params.WIFIPWD} > ./ocarina-os/meta-ocarina/recipes-core/base-files/files/wpa_supplicant.conf
-                """
+                    wpa_passphrase "${params.WIFINAME}" "${params.WIFIPWD}" > ./ocarina-os/meta-ocarina/recipes-core/base-files/files/wpa_supplicant.conf
+                '''
             }
         }
 
