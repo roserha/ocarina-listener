@@ -12,7 +12,7 @@ wifi_connect() {
     if ! grep -q 'ctrl_interface' /etc/wpa_supplicant.conf 2>/dev/null; then
         sed -i '1s/^/ctrl_interface=\/run\/wpa_supplicant\np2p_disabled=1\n/' /etc/wpa_supplicant.conf
     fi
-    wpa_supplicant -B -i wlan0 -D nl80211 -c /etc/wpa_supplicant.conf > /dev/null 2>&1
+    wpa_supplicant -B -i wlan0 -D nl80211 -c /etc/wpa_supplicant.conf >/dev/null 2>&1
 
     # wait for association before asking for a lease
     i=0
@@ -29,12 +29,12 @@ wifi_connect() {
         return 1
     fi
 
-    dhcpcd wlan0 > /dev/null 2>&1 &
+    dhcpcd wlan0 >/dev/null 2>&1 &
     DHCPCD_PID=$!
 
-    # wait up to 10s for an IP
+    # wait up to 30s for an IP
     i=0
-    while [ $i -lt 10 ]; do
+    while [ $i -lt 30 ]; do
         sleep 1
         IP=$(ip addr show wlan0 | grep "inet " | awk '{print $2}' | cut -d/ -f1)
         if [ -n "$IP" ]; then
@@ -44,7 +44,7 @@ wifi_connect() {
         i=$((i + 1))
     done
 
-    # no IP after 10s, kill everything
+    # no IP after 30s, kill everything
     echo ">> WiFi connection timed out, giving up"
     kill $DHCPCD_PID 2>/dev/null
     killall wpa_supplicant 2>/dev/null
