@@ -4,8 +4,7 @@ SRC_URI:append = " file://issue \
                    file://load-modules \
                    file://aliases.sh \
                    file://motd.sh \
-                   file://wifi-connect.sh \
-                   file://wpa_supplicant.conf"
+                   file://wifi-connect.sh"
 
 do_install:append() {
     # create all the directories we need first so nothing breaks
@@ -58,9 +57,6 @@ EOF
     # install wifi-connect script to auto login to wifi if existent
     install -m 0755 ${WORKDIR}/wifi-connect.sh ${D}${sysconfdir}/init.d/wifi-connect
     ln -s ../init.d/wifi-connect ${D}${sysconfdir}/rcS.d/S07wifi-connect
-
-    # speaking of which let's add the jenkins-generated wpa_supplicant file
-    install -m 0755 ${WORKDIR}/wpa_supplicant.conf ${D}${sysconfdir}/wpa_supplicant.conf
 }
 
 FILES:${PN}:append = " ${sysconfdir}/profile.d/motd.sh \
@@ -71,5 +67,4 @@ FILES:${PN}:append = " ${sysconfdir}/profile.d/motd.sh \
                        ${sysconfdir}/init.d/load-modules \
                        ${sysconfdir}/rcS.d/S06load-modules \
                        ${sysconfdir}/init.d/plymouth-start \
-                       ${sysconfdir}/init.d/wifi-connect \
-                       ${sysconfdir}/wpa_supplicant.conf"
+                       ${sysconfdir}/init.d/wifi-connect"
