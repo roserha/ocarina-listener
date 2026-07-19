@@ -55,7 +55,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut last_ip_calculation = Instant::now();
     let mut ip_addy = match Command::new("whatsmyip").output() {
-        Ok(ip) => String::from_utf8(ip.stdout),
+        Ok(ip) => String::from_utf8(ip.stdout).unwrap_or(""),
         Err(_) => ""
     } ;
 
@@ -80,7 +80,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     if (last_ip_calculation.elapsed() >= Duration::from_millis(1500))
                     {
                         ip_addy = match Command::new("whatsmyip").output() {
-                            Ok(ip) => String::from_utf8(ip.stdout),
+                            Ok(ip) => String::from_utf8(ip.stdout).unwrap_or(),
                             Err(_) => ""
                         }
 
