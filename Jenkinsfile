@@ -1,5 +1,9 @@
 pipeline {
     agent any
+    parameters {
+        string(name: 'WIFI-NAME', defaultValue: '', description: 'WiFi Name')
+        string(name: 'WIFI-PWD', defaultValue: '', description: 'WiFi Password')
+    }
     options {
         ansiColor('xterm')
         buildDiscarder(logRotator(numToKeepStr: '10')) 
@@ -28,6 +32,8 @@ pipeline {
                        ./ocarina-os/meta-ocarina/recipes-ocarina/ocarina-listener/files
                     cp ./target/aarch64-unknown-linux-gnu/release/ocarina-splash \
                        ./ocarina-os/meta-ocarina/recipes-core/initramfs-framework/files
+
+                    wpa_passphrase ${params.WIFI-NAME} ${params.WIFI-PWD} > ./ocarina-os/meta-ocarina/recipes-core/base-files/files/wpa_supplicant.conf
                 '''
             }
         }
