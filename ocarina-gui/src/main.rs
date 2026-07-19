@@ -1,15 +1,15 @@
 // Prevent console window in addition to Slint window in Windows release builds when, e.g., starting the app via file manager. Ignored on other platforms.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::error::Error;
-use std::ptr::read;
-use std::sync::mpsc;
-use std::os::unix::net::{UnixStream,UnixListener};
-use std::io::{BufRead, BufReader};
 use slint::{Model, ModelRc, VecModel};
-use std::rc::Rc;
+use std::error::Error;
+use std::io::{BufRead, BufReader};
+use std::os::unix::net::{UnixListener, UnixStream};
 use std::process::Command;
-use std::time::Instant;
+use std::ptr::read;
+use std::rc::Rc;
+use std::sync::mpsc;
+use std::time::{Duration, Instant};
 
 pub struct DisplayData {
     pub freq: f32,
@@ -24,7 +24,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let ui = AppWindow::new()?;
 
     let ui_handle = ui.as_weak();
-    
+
     // Set up display info MPSC channel to run parallel with UI thread
     let (tx, rx) = mpsc::channel::<String>();
     let _ = std::fs::remove_file("/tmp/ocarina-listener.sock");
@@ -33,10 +33,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     std::thread::spawn(move || {
         if let Ok((stream, _)) = listener.accept() {
             let stream_reader = BufReader::new(stream);
-            
+
             for stream_line in stream_reader.lines() {
                 match stream_line {
-                    Ok(line) => {tx.send(line).ok();}
+                    Ok(line) => {
+                        tx.send(line).ok();
+                    }
                     Err(_) => {}
                 }
             }
@@ -55,9 +57,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut last_ip_calculation = Instant::now();
     let mut ip_addy = match Command::new("whatsmyip").output() {
-        Ok(ip) => String::from_utf8(ip.stdout).unwrap_or(""),
-        Err(_) => ""
-    } ;
+        Ok(ip) => String::from_utf8(ip.stdout).unwrap_or(String::new()),
+        Err(_) => String::new(),
+    };
 
     ui_loop.start(
         slint::TimerMode::Repeated,
@@ -66,25 +68,25 @@ fn main() -> Result<(), Box<dyn Error>> {
             if let Ok(msg) = rx.try_recv() {
                 if let Some(ui) = ui_handle.upgrade() {
                     let raw_msgs = msg.split("||").collect::<Vec<&str>>();
-                    
-                    let played_notes:Vec<slint::SharedString> = raw_msgs[3].split(" ").map(|s| s.trim().into()).collect();
-                    
+
+                    let played_notes: Vec<slint::SharedString> =
+                        raw_msgs[3].split(" ").map(|s| s.trim().into()).collect();
+
                     let played_notes_rc = Rc::new(VecModel::from(played_notes));
-                    
+
                     ui.set_playedNotes(ModelRc::new(played_notes_rc.clone()));
 
                     ui.set_listening(raw_msgs[2] != "--");
 
                     ui.set_currentlyPlayingSong(raw_msgs[2].into());
 
-                    if (last_ip_calculation.elapsed() >= Duration::from_millis(1500))
-                    {
+                    if last_ip_calculation.elapsed() >= Duration::from_millis(1500) {
                         ip_addy = match Command::new("whatsmyip").output() {
-                            Ok(ip) => String::from_utf8(ip.stdout).unwrap_or(),
-                            Err(_) => ""
-                        }
+                            Ok(ip) => String::from_utf8(ip.stdout).unwrap_or(String::new()),
+                            Err(_) => String::new(),
+                        };
 
-                        ui.set_ipAddy(slint::SharedString::from(ip_addy));
+                        ui.set_ipAddy(slint::SharedString::from(ip_addy.clone()));
 
                         last_ip_calculation = Instant::now();
                     }
