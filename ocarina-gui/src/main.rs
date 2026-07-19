@@ -9,6 +9,7 @@ use std::io::{BufRead, BufReader};
 use slint::{Model, ModelRc, VecModel};
 use std::rc::Rc;
 use std::process::Command;
+use std::time::Instant;
 
 pub struct DisplayData {
     pub freq: f32,
@@ -52,6 +53,12 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let ui_loop = slint::Timer::default();
 
+    let mut last_ip_calculation = Instant::now();
+    let mut ip_addy = match Command::new("whatsmyip").output() {
+        Ok(ip) => String::from_utf8(ip.stdout),
+        Err(_) => ""
+    } ;
+
     ui_loop.start(
         slint::TimerMode::Repeated,
         std::time::Duration::from_millis(16),
@@ -70,9 +77,17 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                     ui.set_currentlyPlayingSong(raw_msgs[2].into());
 
-                    ui.set_ipAddy(slint::SharedString::from(String::from_utf8(
-                        Command::new("whatsmyip").output().expect("Err when unpacking whatsmyip cmd").stdout
-                    ).expect("err")));
+                    if (last_ip_calculation.elapsed() >= Duration::from_millis(1500))
+                    {
+                        ip_addy = match Command::new("whatsmyip").output() {
+                            Ok(ip) => String::from_utf8(ip.stdout),
+                            Err(_) => ""
+                        }
+
+                        ui.set_ipAddy(slint::SharedString::from(ip_addy));
+
+                        last_ip_calculation = Instant::now();
+                    }
                 }
             }
         },
