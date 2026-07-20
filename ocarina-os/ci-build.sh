@@ -27,8 +27,8 @@ cp ~/work/conf-files/local.conf ~/my-build/conf/local.conf
 
 echo "Disabling poky post-installaton intercept scripts"
 for script in /home/build/work/poky/scripts/postinst-intercepts/*; do
-    echo '#!/bin/sh' > "$script"
-    echo 'exit 0' >> "$script"
+    echo '#!/bin/sh' >"$script"
+    echo 'exit 0' >>"$script"
     chmod +x "$script"
 done
 
@@ -36,6 +36,7 @@ done
 
 echo "Cleaning bitbake image"
 bitbake core-image-base -c cleanall
+bitbake rpi-config -c cleansstate
 echo "Building image"
 bitbake core-image-base
 
