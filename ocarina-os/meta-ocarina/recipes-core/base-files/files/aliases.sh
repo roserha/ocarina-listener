@@ -23,7 +23,7 @@ changewifi() {
     if [ -z "$PSK" ] && [ "$SSID" = "$CURRENT_SSID" ]; then
         echo ">> Reconnecting with existing config..."
     else
-        wpa_passphrase "$SSID" "$PSK" > /etc/wpa_supplicant.conf
+        wpa_passphrase "$SSID" "$PSK" >/etc/wpa_supplicant.conf
         sed -i '1s/^/ctrl_interface=\/run\/wpa_supplicant\np2p_disabled=1\n/' /etc/wpa_supplicant.conf
     fi
 
@@ -33,7 +33,7 @@ changewifi() {
     ip link set wlan0 down
     ip link set wlan0 up
     ensure_wpa_conf_headers
-    wpa_supplicant -B -i wlan0 -D nl80211 -c /etc/wpa_supplicant.conf > /dev/null 2>&1
+    wpa_supplicant -B -i wlan0 -D nl80211 -c /etc/wpa_supplicant.conf >/dev/null 2>&1
 
     echo ">> Waiting for association..."
     i=0
@@ -49,6 +49,7 @@ changewifi() {
         return 1
     fi
 
-    dhcpcd wlan0 > /dev/null 2>&1 &
+    dhcpcd wlan0 >/dev/null 2>&1 &
     echo ">> Connecting in background, run 'whatsmyip' to check status"
 }
+
