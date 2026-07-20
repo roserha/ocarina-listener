@@ -1,0 +1,18 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          ocarina-splash
+# Required-Start:
+# Required-Stop:
+# Default-Start:     S
+# Default-Stop:
+# Short-Description: Ocarina boot splash
+### END INIT INFO
+
+case "$1" in
+    start)
+        /usr/bin/ocarina-splash &
+        ;;
+    stop)
+        killall ocarina-splash 2>/dev/null || true
+        ;;
+esac
