@@ -52,6 +52,6 @@ FILES:${PN} = "${bindir}/ocarina-listener \
                ${sysconfdir}/init.d/ocarina-splash \
                ${sysconfdir}/rcS.d/S02ocarina-splash \
                ${sysconfdir}/asound.conf \
-               ${localstatedir}/asound.state"
+               ${localstatedir}/lib/alsa/asound.state"
 
 
