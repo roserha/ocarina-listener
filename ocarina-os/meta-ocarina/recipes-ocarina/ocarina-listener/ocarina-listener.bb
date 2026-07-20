@@ -29,7 +29,7 @@ do_install() {
     install -m 0755 ${WORKDIR}/ocarina-listener.init ${D}${INIT_D_DIR}/ocarina-listener
 
     install -d ${D}${datadir}/ocarina/sounds
-    cp -r ${WORKDIR}/sounds/* ${D}${datadir}/ocarina/sounds
+    cp -r ${WORKDIR}/sounds/*.wav ${D}${datadir}/ocarina/sounds
 
     install -m 0755 ${WORKDIR}/ocarina-splash.init ${D}${sysconfdir}/init.d/ocarina-splash
     install -d ${D}${sysconfdir}/rcS.d
