@@ -9,11 +9,11 @@ SRC_URI = "file://ocarina-listener \
            file://sounds\
            file://ocarina-splash.init\
            file://asound.conf\
-           file://asond.state"
+           file://asound.state"
 
 S = "${WORKDIR}"
 
-RDEPENDS:${PN} = "alsa-lib"
+RDEPENDS:${PN} = "alsa-lib fontconfig"
 
 inherit update-rc.d
 
@@ -39,8 +39,8 @@ do_install() {
 
     install -m 0644 ${WORKDIR}/asound.conf ${D}${sysconfdir}/asound.conf
 
-    install -d ${D}${localstatedir}
-    install -m 0644 ${WORKDIR}/asound.state ${D}${localstatedir}/asound.state
+    install -d ${D}${localstatedir}/lib/alsa
+    install -m 0644 ${WORKDIR}/asound.state ${D}${localstatedir}/lib/alsa/asound.state
 }
 
 FILES:${PN} = "${bindir}/ocarina-listener \
@@ -48,11 +48,10 @@ FILES:${PN} = "${bindir}/ocarina-listener \
                ${bindir}/ocarina-gui-launcher \
                ${bindir}/ocarina-splash \
                ${INIT_D_DIR}/ocarina-listener \
-               ${datadir}/ocarina/sounds\
+               ${datadir}/ocarina/sounds \
                ${sysconfdir}/init.d/ocarina-splash \
                ${sysconfdir}/rcS.d/S02ocarina-splash \
-               ${sysconfdir}/asound.conf\
+               ${sysconfdir}/asound.conf \
                ${localstatedir}/asound.state"
 
 
-RDEPENDS:${PN} += "fontconfig"
