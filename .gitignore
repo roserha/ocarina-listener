@@ -9,3 +9,4 @@
 *.tar
 *.tar.gz
 *.tar.xz
+/ocarina-gui/ui/*clef and guides.svg

@@ -5,7 +5,8 @@ SRC_URI = "file://ocarina-listener \
            file://ocarina-gui \
            file://ocarina-gui-launcher \
            file://ocarina-splash \
-           file://ocarina-listener.init"
+           file://ocarina-listener.init\
+           file://sounds"
 
 S = "${WORKDIR}"
 
@@ -25,12 +26,16 @@ do_install() {
 
     install -d ${D}${INIT_D_DIR}
     install -m 0755 ${WORKDIR}/ocarina-listener.init ${D}${INIT_D_DIR}/ocarina-listener
+
+    install -d ${D}${datadir}/ocarina/sounds
+    cp -r ${WORKDIR}/sounds/* ${D}${datadir}/ocarina/sounds
 }
 
 FILES:${PN} = "${bindir}/ocarina-listener \
                ${bindir}/ocarina-gui \
                ${bindir}/ocarina-gui-launcher \
                ${bindir}/ocarina-splash \
-               ${INIT_D_DIR}/ocarina-listener"
+               ${INIT_D_DIR}/ocarina-listener \
+               ${datadir}/ocarina/sounds"
 
 RDEPENDS:${PN} += "fontconfig"
