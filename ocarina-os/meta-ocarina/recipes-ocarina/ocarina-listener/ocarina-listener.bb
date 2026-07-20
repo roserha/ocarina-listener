@@ -7,7 +7,9 @@ SRC_URI = "file://ocarina-listener \
            file://ocarina-splash \
            file://ocarina-listener.init\
            file://sounds\
-           file://ocarina-splash.init"
+           file://ocarina-splash.init\
+           file://asound.conf\
+           file://asond.state"
 
 S = "${WORKDIR}"
 
@@ -34,6 +36,11 @@ do_install() {
     install -m 0755 ${WORKDIR}/ocarina-splash.init ${D}${sysconfdir}/init.d/ocarina-splash
     install -d ${D}${sysconfdir}/rcS.d
     ln -sf ../init.d/ocarina-splash ${D}${sysconfdir}/rcS.d/S02ocarina-splash
+
+    install -m 0644 ${WORKDIR}/asound.conf ${D}${sysconfdir}/asound.conf
+
+    install -d ${D}${localstatedir}
+    install -m 0644 ${WORKDIR}/asound.state ${D}${localstatedir}/asound.state
 }
 
 FILES:${PN} = "${bindir}/ocarina-listener \
@@ -43,7 +50,9 @@ FILES:${PN} = "${bindir}/ocarina-listener \
                ${INIT_D_DIR}/ocarina-listener \
                ${datadir}/ocarina/sounds\
                ${sysconfdir}/init.d/ocarina-splash \
-               ${sysconfdir}/rcS.d/S02ocarina-splash"
+               ${sysconfdir}/rcS.d/S02ocarina-splash \
+               ${sysconfdir}/asound.conf\
+               ${localstatedir}/asound.state"
 
 
 RDEPENDS:${PN} += "fontconfig"
