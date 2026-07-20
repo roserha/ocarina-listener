@@ -19,43 +19,16 @@ const FRAME_MS: u64 = 1000 / FPS;
 const MAX_SPARKLES: usize = 100;
 const MIN_SPARKLES: usize = 50;
 
-// 4x4 Bayer ordered-dither matrix, values 0..15 normalized to roughly [-0.5, 0.5].
-// Used to scatter the RGB888 -> RGB565 quantization error so smooth gradients
-// (the glow especially) don't show hard banding stair-steps.
-const BAYER4: [[f32; 4]; 4] = [
-    [0.0 / 16.0, 8.0 / 16.0, 2.0 / 16.0, 10.0 / 16.0],
-    [12.0 / 16.0, 4.0 / 16.0, 14.0 / 16.0, 6.0 / 16.0],
-    [3.0 / 16.0, 11.0 / 16.0, 1.0 / 16.0, 9.0 / 16.0],
-    [15.0 / 16.0, 7.0 / 16.0, 13.0 / 16.0, 5.0 / 16.0],
-];
+// The framebuffer is a8r8g8b8 @ 32bpp (confirmed via dmesg: simple-framebuffer
+// format=a8r8g8b8, mode=1024x600x32). On little-endian ARM each pixel is stored
+// in memory as bytes [B, G, R, A] — lowest byte first. 4 bytes/pixel.
+const BYTES_PER_PX: usize = 4;
 
-// Quantize one 8-bit channel down to `bits` with a dither bias added before
-// truncation. `bias` is the Bayer threshold for this pixel, scaled to the size
-// of one quantization step so the error is spread evenly.
-#[inline]
-fn quantize_channel(value: u8, bits: u32, bias: f32) -> u16 {
-    let levels = (1u16 << bits) - 1; // 31 for 5-bit, 63 for 6-bit
-    let step = 255.0 / levels as f32; // size of one output step in 0..255 space
-    // center the bias around 0 so it pushes some pixels up, some down
-    let v = value as f32 + (bias - 0.5) * step;
-    let v = v.clamp(0.0, 255.0);
-    ((v / 255.0) * levels as f32 + 0.5) as u16 & levels
-}
-
-#[inline]
-fn rgb_to_rgb565_dithered(r: u8, g: u8, b: u8, x: u32, y: u32) -> u16 {
-    let bias = BAYER4[(y & 3) as usize][(x & 3) as usize];
-    let r = quantize_channel(r, 5, bias);
-    let g = quantize_channel(g, 6, bias);
-    let b = quantize_channel(b, 5, bias);
-    (r << 11) | (g << 5) | b
-}
-
-// Alpha-over blend of a straight-alpha foreground onto an opaque RGB background,
-// all in full 8-bit precision. No RGB565 round-trip here anymore — compositing
-// happens entirely in the RGB888 offscreen buffer, and 565 conversion is a single
-// pass at the very end. That keeps anti-aliased logo edges crisp instead of
-// losing precision every frame.
+// Alpha-over blend of a straight-alpha foreground onto an opaque RGB background.
+// Compositing happens in a full-precision RGB888 buffer (3 bytes/px), then gets
+// expanded to ARGB8888 in a single pass at the end. No color-depth loss anywhere,
+// so anti-aliased logo edges and the glow gradient stay clean — 32bpp has plenty
+// of range, so there's no need for the dithering the old 16-bit version used.
 #[inline]
 fn blend_over(fg_r: u8, fg_g: u8, fg_b: u8, fg_a: f32, bg: &mut [u8]) {
     bg[0] = (fg_r as f32 * fg_a + bg[0] as f32 * (1.0 - fg_a)) as u8;
@@ -84,15 +57,27 @@ impl Sparkle {
 }
 
 fn main() {
-    // wait for fb0
-    let mut attempts = 0;
-    while !std::path::Path::new("/dev/fb0").exists() && attempts < 50 {
-        std::thread::sleep(Duration::from_millis(100));
-        attempts += 1;
+    // Wait for /dev/fb0 to be openable (not just exist). Retrying the actual open
+    // handles the boot race where the node is present but not yet openable — which
+    // bit us on the faster no-serial boot. The 500ms head start lets the framebuffer
+    // subsystem settle before we start hammering it. Up to 500ms + 100*100ms ~= 10.5s.
+    std::thread::sleep(Duration::from_millis(500));
+
+    let mut fb = None;
+    for _ in 0..100 {
+        match OpenOptions::new().write(true).open("/dev/fb0") {
+            Ok(f) => {
+                fb = Some(f);
+                break;
+            }
+            Err(_) => std::thread::sleep(Duration::from_millis(100)),
+        }
     }
-    if !std::path::Path::new("/dev/fb0").exists() {
-        return;
-    }
+    // Exit cleanly if fb0 never came up — no splash is fine, a panic is not.
+    let mut fb = match fb {
+        Some(f) => f,
+        None => return,
+    };
 
     // hide TTY
     let _ = std::fs::write("/sys/class/vtconsole/vtcon0/bind", "0");
@@ -116,10 +101,9 @@ fn main() {
     let scaled_w = (logo_w as f32 * scale) as u32;
     let scaled_h = (logo_h as f32 * scale) as u32;
 
-    // Lanczos3: high-quality resampling with a windowed-sinc kernel. This is where
-    // the pixelation was coming from — Nearest just grabbed the closest source pixel
-    // with no blending, so every downscale got hard jaggies. Lanczos3 blends a
-    // neighborhood and gives clean edges. Runs once at startup, so the cost is free.
+    // Lanczos3: high-quality windowed-sinc resampling. This is what fixes the
+    // pixelation — Nearest grabbed the closest source pixel with no blending, so
+    // every downscale got hard jaggies. Runs once at startup, so it's free.
     let logo = image::imageops::resize(
         &logo,
         scaled_w,
@@ -155,17 +139,18 @@ fn main() {
         ((*state >> 33) as f32) / (u32::MAX as f32)
     };
 
-    // Two buffers now:
+    // Two buffers:
     //  - `composite` is RGB888 (3 bytes/px) where all drawing/blending happens in
     //    full precision.
-    //  - `framebuf` is RGB565 (2 bytes/px), produced once per frame from `composite`
-    //    via a single dithered conversion pass, then written to /dev/fb0.
+    //  - `framebuf` is ARGB8888 (4 bytes/px), produced once per frame from
+    //    `composite` and written to /dev/fb0.
     let mut composite = vec![0u8; (FB_WIDTH * FB_HEIGHT * 3) as usize];
-    let mut framebuf = vec![0u8; (FB_WIDTH * FB_HEIGHT * 2) as usize];
-    let mut fb = OpenOptions::new()
-        .write(true)
-        .open("/dev/fb0")
-        .expect("fb0");
+    let mut framebuf = vec![0u8; (FB_WIDTH * FB_HEIGHT) as usize * BYTES_PER_PX];
+    // Alpha byte is constant (fully opaque); pre-set it once. The per-frame expand
+    // below only touches the color bytes, leaving these 0xFF in place.
+    for px in framebuf.chunks_mut(BYTES_PER_PX) {
+        px[3] = 0xFF;
+    }
 
     let start = Instant::now();
     let mut _frame: u64 = 0;
@@ -222,25 +207,24 @@ fn main() {
 
         // spawn sparkles to maintain 50-100
         let active_count = sparkles.iter().filter(|s| s.active).count();
-        #[allow(clippy::collapsible_if)]
-        if active_count < MIN_SPARKLES
-            || (active_count < MAX_SPARKLES && lcg_rand(&mut rng_state) < 0.3)
+        let want_spawn = active_count < MIN_SPARKLES
+            || (active_count < MAX_SPARKLES && lcg_rand(&mut rng_state) < 0.3);
+
+        if want_spawn
+            && !spawn_points.is_empty()
+            && let Some(s) = sparkles.iter_mut().find(|s| !s.active)
         {
-            if let Some(s) = sparkles.iter_mut().find(|s| !s.active)
-                && !spawn_points.is_empty()
-            {
-                let idx = ((lcg_rand(&mut rng_state) * spawn_points.len() as f32) as usize)
-                    .min(spawn_points.len() - 1);
-                s.x = spawn_points[idx].0;
-                s.y = spawn_points[idx].1;
-                s.speed = if lcg_rand(&mut rng_state) < 0.5 {
-                    15.0
-                } else {
-                    30.0
-                };
-                s.life = 1.0;
-                s.active = true;
-            }
+            let idx = ((lcg_rand(&mut rng_state) * spawn_points.len() as f32) as usize)
+                .min(spawn_points.len() - 1);
+            s.x = spawn_points[idx].0;
+            s.y = spawn_points[idx].1;
+            s.speed = if lcg_rand(&mut rng_state) < 0.5 {
+                15.0
+            } else {
+                30.0
+            };
+            s.life = 1.0;
+            s.active = true;
         }
 
         // update and draw sparkles (full-precision blend into RGB888 composite)
@@ -271,22 +255,16 @@ fn main() {
             }
         }
 
-        // single dithered RGB888 -> RGB565 conversion pass for the whole frame
-        for y in 0..FB_HEIGHT {
-            for x in 0..FB_WIDTH {
-                let cidx = ((y * FB_WIDTH + x) * 3) as usize;
-                let color = rgb_to_rgb565_dithered(
-                    composite[cidx],
-                    composite[cidx + 1],
-                    composite[cidx + 2],
-                    x,
-                    y,
-                );
-                let fidx = ((y * FB_WIDTH + x) * 2) as usize;
-                let bytes = color.to_le_bytes();
-                framebuf[fidx] = bytes[0];
-                framebuf[fidx + 1] = bytes[1];
-            }
+        // Expand RGB888 composite -> ARGB8888 framebuffer. Memory byte order for
+        // a8r8g8b8 on little-endian is [B, G, R, A]. Alpha stays 0xFF from pre-fill.
+        // If red and blue come out swapped on-screen, swap the B and R lines below.
+        for i in 0..(FB_WIDTH * FB_HEIGHT) as usize {
+            let c = i * 3;
+            let f = i * BYTES_PER_PX;
+            framebuf[f] = composite[c + 2]; // B
+            framebuf[f + 1] = composite[c + 1]; // G
+            framebuf[f + 2] = composite[c]; // R
+            // framebuf[f + 3] stays 0xFF (alpha)
         }
 
         // write framebuffer

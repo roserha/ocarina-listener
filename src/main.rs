@@ -37,8 +37,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Get Microphone Info
     let host = cpal::default_host();
-    let device = host.default_input_device().expect("No devices found :(");
-    let sconfig: StreamConfig = device.default_input_config().unwrap().into();
+    let device = host
+        .input_devices()
+        .expect("No devices found :(")
+        .find(|d| {
+            d.name()
+                .map(|n| n.contains("googlevoicehat") || n.contains("sndrpigooglevoi"))
+                .unwrap_or(false)
+        })
+        .expect("voicehat mic not found :((");
+
+    let sconfig: StreamConfig = device
+        .default_input_config()
+        .expect("failed to get inptu configs :(((")
+        .into();
+
     println!("Chosen device: \"{}\"\n", device.name().unwrap());
 
     // Print FSN skeleton
