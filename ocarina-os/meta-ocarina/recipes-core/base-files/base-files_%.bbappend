@@ -3,8 +3,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI:append = " file://issue \
                    file://load-modules \
                    file://aliases.sh \
-                   file://motd.sh \
-                   file://interfaces"
+                   file://motd.sh"
 
 do_install:append() {
     # create all the directories we need first so nothing breaks
@@ -54,8 +53,6 @@ EOF
     # install the motd script that shows system info after login
     install -m 0755 ${WORKDIR}/motd.sh ${D}${sysconfdir}/profile.d/motd.sh
 
-    # add our custom interfaces file
-    install -m 0644 ${WORKDIR}/interfaces ${D}${sysconfdir}/network/interfaces
 }
 
 FILES:${PN}:append = " ${sysconfdir}/profile.d/motd.sh \
