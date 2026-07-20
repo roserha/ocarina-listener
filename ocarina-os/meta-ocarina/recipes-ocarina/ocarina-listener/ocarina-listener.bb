@@ -48,10 +48,10 @@ FILES:${PN} = "${bindir}/ocarina-listener \
                ${bindir}/ocarina-gui-launcher \
                ${bindir}/ocarina-splash \
                ${INIT_D_DIR}/ocarina-listener \
-               ${datadir}/ocarina/sounds \
+               ${datadir}/ocarina/sounds/*.wav \
                ${sysconfdir}/init.d/ocarina-splash \
                ${sysconfdir}/rcS.d/S02ocarina-splash \
                ${sysconfdir}/asound.conf \
-               ${localstatedir}/lib/alsa/asound.state"
+               ${localstatedir}/lib/alsa/*"
 
 
