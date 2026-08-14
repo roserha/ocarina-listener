@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+echo "=== OCARINA_GIT_HASH=[${OCARINA_GIT_HASH}] ==="
+
 # Make sure we're running this in the right place!
 
 cd /home/build/work
@@ -37,6 +39,8 @@ done
 echo "Cleaning bitbake image"
 bitbake core-image-base -c cleanall
 bitbake rpi-config -c cleansstate
+echo "Confirming git hash"
+bitbake -e core-image-base 2>/dev/null | grep '^OCARINA_GIT_HASH'
 echo "Building image"
 bitbake core-image-base
 
