@@ -50,7 +50,11 @@ cp ~/my-build/tmp/deploy/images/raspberrypi*/core-image-base-raspberrypi*-64.roo
 
 echo "Tarring image"
 rm ~/work/*.tar.xz || true
-VERSION=$(grep DISTRO_VERSION /home/build/work/meta-ocarina/conf/distro/ocarinaos.conf | cut -d'"' -f2 | tr '.' '-')
-tar -cJf /home/build/work/OcarinaOSv${VERSION}.tar.xz \
+VERSION=$(grep '^DISTRO_VERSION' /home/build/work/meta-ocarina/conf/distro/ocarinaos.conf \
+  | cut -d'"' -f2 \
+  | sed 's/${OCARINA_GIT_HASH}/'"${OCARINA_GIT_HASH}"'/' \
+  | tr '.+' '--')
+echo "VERSION=[${VERSION}]"
+tar -cJf "/home/build/work/OcarinaOSv${VERSION}.tar.xz" \
     /home/build/work/core-image-base-raspberrypi3-64.rootfs-*.wic.bmap \
     /home/build/work/core-image-base-raspberrypi3-64.rootfs-*.wic.bz2
