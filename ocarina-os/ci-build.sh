@@ -43,6 +43,7 @@ done
 echo "Cleaning bitbake image"
 bitbake core-image-base -c cleanall
 bitbake rpi-config -c cleansstate
+bitbake os-release -c cleansstate
 echo "Confirming git hash"
 bitbake -e core-image-base 2>/dev/null | grep '^OCARINA_GIT_HASH'
 echo "Building image"
