@@ -127,7 +127,10 @@ RUN set -eux; \
 # distros like noble) with a real directory for its own toolchain. That breaks
 # glibc's linker scripts, which hardcode absolute paths like
 # GROUP( /lib/aarch64-linux-gnu/libm.so.6 ). Our unpacked sysroot lands in
-# /usr/lib/aarch64-linux-gnu, so bridge the two.
+# /usr/lib/aarch64-linux-gnu, so bridge the two. The x86_64 symlink is the same problem for HOST builds:
+# build.rs scripts (slint-build, and our version stamping) compile and run on
+# amd64, and amd64's libm.so linker script hardcodes /lib/x86_64-linux-gnu/
+# paths that also don't exist under the replaced /lib.
 RUN set -eux; \
     if [ ! -e /lib/aarch64-linux-gnu ]; then \
         ln -s /usr/lib/aarch64-linux-gnu /lib/aarch64-linux-gnu; \
@@ -135,7 +138,13 @@ RUN set -eux; \
     if [ ! -e /lib/ld-linux-aarch64.so.1 ]; then \
         ln -s /usr/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1; \
     fi; \
-    ls -la /lib/aarch64-linux-gnu/libm.so.6 /lib/ld-linux-aarch64.so.1
+    if [ ! -e /lib/x86_64-linux-gnu ]; then \
+        ln -s /usr/lib/x86_64-linux-gnu /lib/x86_64-linux-gnu; \
+    fi; \
+    if [ ! -e /lib64 ]; then \
+        ln -s /usr/lib64 /lib64; \
+    fi; \
+    ls -la /lib/aarch64-linux-gnu/libm.so.6 /lib/x86_64-linux-gnu/libm.so.6
 
 # --- pkg-config wiring --------------------------------------------------------
 # Build scripts (alsa-sys, yeslogic-fontconfig-sys, etc) shell out to

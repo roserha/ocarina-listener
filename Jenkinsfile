@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    environment {
+        OCARINA_GIT_HASH = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+    }
     parameters {
         string(name: 'WIFINAME', description: 'WiFi Name')
         string(name: 'WIFIPWD', description: 'WiFi Password')
@@ -20,6 +23,7 @@ pipeline {
                     sudo docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
                     echo "Exporting Rust things"
                     export PATH="$HOME/.cargo/bin:$PATH"
+                    export OCARINA_GIT_HASH=$(git rev-parse --short HEAD)$(git diff --quiet || echo -dirty)
                     rustup default stable
                     cross build --target aarch64-unknown-linux-gnu --release --workspace
                     cp ./target/aarch64-unknown-linux-gnu/release/ocarina-listener \
@@ -55,6 +59,7 @@ pipeline {
                       --device=/dev/net/tun:/dev/net/tun \
                       --cap-add NET_ADMIN \
                       --hostname buildserver \
+                      -e OCARINA_GIT_HASH="$OCARINA_GIT_HASH" \
                       -v /tftpboot:/tftpboot \
                       -v $(pwd)/ocarina-os:/home/build/work \
                       -v ocarina_bitbake_cache_volume:/home/build/my-build \

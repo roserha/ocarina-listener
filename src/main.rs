@@ -15,8 +15,40 @@ use std::os::unix::net::UnixStream;
 use std::sync::mpsc;
 use std::thread;
 
+use syslog::{Facility, Formatter3164};
+
+fn init_logging() {
+    let formatter = Formatter3164 {
+        facility: Facility::LOG_DAEMON,
+        hostname: None,
+        process: "ocarina-listener".into(),
+        pid: std::process::id(),
+    };
+
+    match syslog::unix(formatter) {
+        Err(e) => eprintln!("could not connect to syslog: {e}"),
+        Ok(writer) => {
+            let _ = log::set_boxed_logger(Box::new(syslog::BasicLogger::new(writer)))
+                .map(|()| log::set_max_level(log::LevelFilter::Info));
+        }
+    }
+
+    std::panic::set_hook(Box::new(|info| {
+        log::error!("PANIC: {info}");
+    }));
+}
+
+const VERSION: &str = concat!(env!("CARGO_PKG_VERSION"), " (", env!("GIT_HASH"), ")");
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!(
+    if std::env::args().any(|a| a == "--version" || a == "-V") {
+        println!("{VERSION}");
+        return Ok(());
+    }
+
+    init_logging();
+    log::info!("ocarina-listener starting (version {VERSION})");
+    log::info!(
         "Hello, {}! :)", /*\nHope {} likes this uwu"*/
         Style::new().color256(213).bold().apply_to("World")  /*
                          , Style::new().color256(135).bold().apply_to("someone")*/
@@ -26,11 +58,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let term = Term::stdout();
 
     // Create and load songbook
-    println!("Loading songs..");
+    log::info!("Loading songs..");
     term.move_cursor_up(1).unwrap();
     let mut songbook: BTreeMap<String, String> = BTreeMap::new();
     songs::load_songbook(&mut songbook);
-    println!(
+    log::info!(
         "Loaded {} songs.",
         Style::new().cyan().bold().apply_to(songbook.len())
     );
@@ -52,7 +84,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .expect("failed to get inptu configs :(((")
         .into();
 
-    println!("Chosen device: \"{}\"\n", device.name().unwrap());
+    log::info!("Chosen device: \"{}\"\n", device.name().unwrap());
 
     // Print FSN skeleton
     println!(

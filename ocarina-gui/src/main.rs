@@ -26,6 +26,31 @@ pub struct AudioPrefs {
 
 slint::include_modules!();
 
+use syslog::{Facility, Formatter3164};
+
+// debug using `tail -f /var/log/messages | grep "ocarina-"`
+
+fn init_logging() {
+    let formatter = Formatter3164 {
+        facility: Facility::LOG_DAEMON,
+        hostname: None,
+        process: "ocarina-gui".into(),
+        pid: std::process::id(),
+    };
+
+    match syslog::unix(formatter) {
+        Err(e) => eprintln!("could not connect to syslog: {e}"),
+        Ok(writer) => {
+            let _ = log::set_boxed_logger(Box::new(syslog::BasicLogger::new(writer)))
+                .map(|()| log::set_max_level(log::LevelFilter::Info));
+        }
+    }
+
+    std::panic::set_hook(Box::new(|info| {
+        log::error!("PANIC: {info}");
+    }));
+}
+
 fn update_ip() -> String {
     match Command::new("sh")
         .arg("-c")
@@ -40,7 +65,37 @@ fn update_ip() -> String {
     }
 }
 
+const VERSION: &str = concat!(env!("CARGO_PKG_VERSION"), " (", env!("GIT_HASH"), ")");
+
+fn binary_version(path: &str) -> String {
+    std::process::Command::new(path)
+        .arg("--version")
+        .output()
+        .ok()
+        .filter(|o| o.status.success())
+        .and_then(|o| String::from_utf8(o.stdout).ok())
+        .map(|s| s.trim().to_string())
+        .unwrap_or_else(|| "unknown".into())
+}
+
+fn os_version() -> String {
+    std::fs::read_to_string("/etc/os-release")
+        .ok()
+        .and_then(|s| {
+            s.lines()
+                .find(|l| l.starts_with("VERSION="))
+                .map(|l| l.trim_start_matches("VERSION=").trim_matches('"').to_string())
+        })
+        .unwrap_or_else(|| "unknown".into())
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
+    if std::env::args().any(|a| a == "--version" || a == "-V") {
+        println!("{VERSION}");
+        return Ok(());
+    }
+    init_logging();
+    log::info!("ocarina-gui starting (version {VERSION})");
     let ui = AppWindow::new()?;
 
     let ui_handle = ui.as_weak();
@@ -74,8 +129,17 @@ fn main() -> Result<(), Box<dyn Error>> {
     let ui_loop = slint::Timer::default();
 
     let mut last_ip_calculation = Instant::now() - Duration::from_millis(1500);
+    let mut first_ip_calculation = last_ip_calculation;
     let mut ip_addy = String::new();
     let mut aplay_tasks: Vec<Child> = vec![];
+
+    let bg_audio = Command::new("sh")
+    .arg("-c")
+    .arg(format!("aplay -D hw:CARD=b1,DEV=0 -t raw -f S16_LE -r 48000 -c 2 /dev/zero"))
+    .spawn()
+    .expect("Failed to start audio process");
+
+    aplay_tasks.push(bg_audio);
 
     ui_loop.start(
         slint::TimerMode::Repeated,
@@ -97,20 +161,31 @@ fn main() -> Result<(), Box<dyn Error>> {
                             "o" => "song_correct",
                             _ => "secret_found"
                         };
-                        
-                        ui.set_songPlaying(slint::SharedString::from(song));
-                        ui.invoke_show_song();
 
-                        if aplay_tasks.len() == 0 {
-                            let aplay = Command::new("sh")
-                                .arg("-c")
-                                .arg(format!("aplay -D plughw:CARD=b1,DEV=1 /usr/share/ocarina/sounds/{cue}.wav && aplay -D plughw:CARD=b1,DEV=1 \"/usr/share/ocarina/sounds/{song}.wav\""))
-                                .spawn()
-                                .expect("Failed to start audio process");
+                        let sp_ss = ui.get_songPlaying();
+                        let sp = sp_ss.as_str();
+
+                        if song != sp {
+                            ui.set_songPlaying(slint::SharedString::from(song));
+                            ui.invoke_show_song();
     
-                            aplay_tasks.push(aplay);
-                        } else {
-                            match aplay_tasks[0].try_wait() {
+                            if aplay_tasks.len() == 1 {
+                                let aplay = match Command::new("sh")
+                                    .arg("-c")
+                                    .arg(format!("aplay -D plughw:CARD=b1,DEV=0 /usr/share/ocarina/sounds/{cue}.wav && aplay -D plughw:CARD=b1,DEV=0 \"/usr/share/ocarina/sounds/{song}.wav\""))
+                                    .spawn()
+                                    {
+                                        Ok(c) => c,
+                                        Err(e) => {
+                                            log::error!("error when creating aplay: {}", e);
+                                            panic!();
+                                        }
+                                    };
+        
+                                aplay_tasks.push(aplay);
+                            }
+                        } else if aplay_tasks.len() == 2 {
+                            match aplay_tasks[1].try_wait() {
                                 // 1. Still Running
                                 Ok(None) => { }
                                 // 2. Finished Successfully (or with a specific code)
@@ -121,12 +196,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                                 // 3. Finished but Failed
                                 Ok(Some(status)) => {
                                     // It stopped, but it failed (e.g., sound card missing, wrong path).
-                                    ui.set_songPlaying(slint::SharedString::from(format!("Command failed with code: {:?}", status.code())));
+                                    ui.set_songPlaying(slint::SharedString::from(format!("Err - {:?}", status.code())));
                                 }
                                 // Error querying the OS
-                                Err(e) => ui.set_songPlaying(slint::SharedString::from(format!("Error talking to the OS: {}", e))),
+                                Err(e) => ui.set_songPlaying(slint::SharedString::from(format!("OSErr - {}", e))),
                             }
                         }
+                        
 
                     }
 
@@ -139,6 +215,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                     if last_ip_calculation.elapsed() >= Duration::from_millis(1500) {
                         ip_addy = update_ip();
                         ui.set_ipAddy(slint::SharedString::from(ip_addy.clone()));
+
+                        if first_ip_calculation == last_ip_calculation
+                        {
+                            ui.set_OcarinaGUIVersion(VERSION.into());
+                            ui.set_OcarinaListenerVersion(binary_version("/usr/bin/ocarina-listener").into());
+                            ui.set_OcarinaOSVersion(os_version().into());
+                        }
 
                         last_ip_calculation = Instant::now();
                     }

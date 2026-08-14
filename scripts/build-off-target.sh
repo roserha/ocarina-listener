@@ -3,6 +3,8 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
+export OCARINA_GIT_HASH=$(git rev-parse --short HEAD)$(git diff --quiet || echo -dirty)
+
 cross build --target aarch64-unknown-linux-gnu --release --workspace &&
     {
         ssh root@$1 "/etc/init.d/ocarina-listener stop"
