@@ -19,6 +19,10 @@ echo "Preparing repositories"
 echo "Setting up BB source"
 source ~/work/poky/oe-init-build-env ~/my-build
 
+# Reset hash things
+export OCARINA_GIT_HASH
+export BB_ENV_PASSTHROUGH_ADDITIONS="${BB_ENV_PASSTHROUGH_ADDITIONS} OCARINA_GIT_HASH"
+
 # Copying files
 
 echo "Copying BB configuration files"
