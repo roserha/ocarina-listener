@@ -50,7 +50,7 @@ cp ~/my-build/tmp/deploy/images/raspberrypi*/core-image-base-raspberrypi*-64.roo
 
 echo "Tarring image"
 rm ~/work/*.tar.xz || true
-VERSION=$(grep '^DISTRO_VERSION' /home/build/work/meta-ocarina/conf/distro/ocarinaos.conf \
+VERSION=$(grep '^DISTRO_VERSION *=' /home/build/work/meta-ocarina/conf/distro/ocarinaos.conf \
   | cut -d'"' -f2 \
   | sed 's/${OCARINA_GIT_HASH}/'"${OCARINA_GIT_HASH}"'/' \
   | tr '.+' '--')
