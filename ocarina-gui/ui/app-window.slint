@@ -1,6 +1,6 @@
 import { Button, VerticalBox, HorizontalBox } from "std-widgets.slint";
 import { NoteCanvas } from "components/note-canvas.slint";
-import { Settings } from "components/settings-menu.slint";
+import { SongPopup } from "components/song-popup.slint";
 import { Info } from "components/info-menu.slint";
 
 component Logo inherits Rectangle {
@@ -35,9 +35,18 @@ export component AppWindow inherits Window {
     in-out property <string> OcarinaOSVersion;
     in-out property <string> OcarinaGUIVersion;
     in-out property <string> OcarinaListenerVersion;
+    in-out property <string> songPlaying;
+    in-out property <bool> playingJingle: false;
 
     callback request-increase-value();
 
+    public function show_song() {
+        songPopup.show();
+    }
+
+    public function hide_song() {
+        songPopup.close();
+    }
     
     VerticalBox {
         ////////////////////////////////////////////
@@ -56,12 +65,6 @@ export component AppWindow inherits Window {
                 horizontal-alignment: center;
                 vertical-alignment: center;
                 text: root.currentlyPlayingSong;
-            }
-            Button {
-                text: "Settings";
-                clicked => {
-                    settingsPopup.show();
-                }
             }
         }
         
@@ -84,11 +87,12 @@ export component AppWindow inherits Window {
             
         }
 
-        settingsPopup := Settings {
-            ipAddress: root.ipAddy;
+        songPopup := SongPopup {
+            songPlaying: root.songPlaying;
         }
 
         infoPopup := Info {
+            ipAddress: root.ipAddy;
             osVersion: OcarinaOSVersion;
             guiVersion: OcarinaGUIVersion;
             listenerVersion: OcarinaListenerVersion;

@@ -1,24 +1,155 @@
-# Derive from the official cross-rs image for your target
-FROM ghcr.io/cross-rs/aarch64-unknown-linux-gnu:edge
+# ============================================================================
+# Dockerfile.cross -- build environment for cross-compiling the ocarina
+# workspace (listener / gui / splash) to aarch64 for the Raspberry Pi.
+#
+# Used by cross-rs. Cross.toml points at this file:
+#     [target.aarch64-unknown-linux-gnu]
+#     dockerfile = "./Dockerfile.cross"
+#
+# The short version of what this does: take the stock cross-rs aarch64 image
+# (which has a working Rust toolchain + aarch64 gcc but no C libraries for the
+# target) and graft on an arm64 sysroot so slint/cpal/fontconfig can link.
+# ============================================================================
 
-# Add the arm64 architecture
-RUN dpkg --add-architecture arm64
+# --- base image ---------------------------------------------------------------
+# Pinned by DIGEST, not tag. The :edge tag is rebuilt upstream whenever they
+# feel like it, which silently changes the underlying Ubuntu release and breaks
+# everything below (package names, sources.list format). This digest == :edge
+# as of 2026-08, which is Ubuntu 24.04 "noble".
+#
+# NOTE: do NOT set `image = "...@sha256:..."` in Cross.toml alongside the
+# `dockerfile` key -- cross reuses that value as the docker --tag, and docker
+# rejects a digest in a tag position. Pin here instead.
+#
+# To update: docker pull ghcr.io/cross-rs/aarch64-unknown-linux-gnu:edge
+#            docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/cross-rs/aarch64-unknown-linux-gnu:edge
+#            then re-check /etc/os-release, since a new base may change codename.
+FROM ghcr.io/cross-rs/aarch64-unknown-linux-gnu@sha256:841801791587858228b61c8098f455008b1055d470e6673e46ddd109abd93182
 
-# Install cross compiler + arm64 target libs
-RUN apt-get update && \
-    apt-get install --assume-yes --no-install-recommends \
-    gcc-aarch64-linux-gnu \
-    libfontconfig1-dev:arm64 \
-    libfreetype6-dev:arm64 \
-    libxkbcommon-dev:arm64 \
-    libinput-dev:arm64 \
-    libgbm-dev:arm64 \
-    libwayland-dev:arm64 \
-    libdrm-dev:arm64 \
-    libegl1-mesa-dev:arm64 \
-    libasound2-dev:arm64 \
-    pkg-config
+# --- build args ---------------------------------------------------------------
+# cross always passes these two on the docker build command line. Declaring
+# them here just consumes them so buildkit stops warning about unused args.
+# We don't actually use CROSS_BASE_IMAGE (see the FROM pin above).
+ARG CROSS_BASE_IMAGE
+ARG CROSS_DEB_ARCH=arm64
 
-# Configure pkg-config to search the target filesystem instead of the host
-ENV PKG_CONFIG_PATH_aarch64_unknown_linux_gnu=/usr/lib/aarch64-linux-gnu/pkgconfig/
-ENV PKG_CONFIG_ALLOW_CROSS=1
+# --- apt sources: teach apt where arm64 packages live -------------------------
+# `dpkg --add-architecture arm64` makes apt start looking for arm64 package
+# indexes on EVERY configured source. But archive.ubuntu.com only carries
+# amd64/i386 -- arm64 lives on ports.ubuntu.com. Without this fix, apt-get
+# update 404s and dies with exit code 100 before installing anything.
+#
+# Two fixes needed:
+#   1. constrain the existing (amd64) sources so apt stops asking them for arm64
+#   2. add a ports.ubuntu.com source that serves arm64
+#
+# The if/else handles both sources formats: noble+ uses deb822
+# (/etc/apt/sources.list.d/ubuntu.sources, with an `Architectures:` field),
+# older releases use the classic one-line format (with [arch=amd64] options).
+# Every StackOverflow answer that seds /etc/apt/sources.list will silently
+# no-op on noble, because that file is just a comment block there.
+#
+# $VERSION_CODENAME comes from /etc/os-release so this survives a base bump.
+RUN set -eux; \
+    . /etc/os-release; \
+    dpkg --add-architecture arm64; \
+    if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then \
+        sed -i '/^Types:/a Architectures: amd64' /etc/apt/sources.list.d/ubuntu.sources; \
+    else \
+        sed -i 's|^deb http|deb [arch=amd64] http|g' /etc/apt/sources.list; \
+    fi; \
+    printf 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports %s main restricted universe multiverse\n' "$VERSION_CODENAME" > /etc/apt/sources.list.d/arm64.list; \
+    printf 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports %s-updates main restricted universe multiverse\n' "$VERSION_CODENAME" >> /etc/apt/sources.list.d/arm64.list
+
+# --- refresh package indexes --------------------------------------------------
+# Deliberately its own layer. If this fails, the problem is the sources config
+# above. If the NEXT step fails, the problem is package names / dependencies.
+# Splitting them makes the exit-100 error actually diagnosable.
+RUN apt-get update
+
+# --- host-side build tools ----------------------------------------------------
+# pkg-config runs on the BUILD machine (amd64), so it is deliberately NOT
+# suffixed with :arm64 -- that would fetch an arm64 binary we can't execute.
+# It reads the target's .pc files; see the PKG_CONFIG_* env vars at the bottom.
+RUN apt-get install --assume-yes --no-install-recommends pkg-config
+
+# --- arm64 sysroot ------------------------------------------------------------
+# This is the weird one. Read before changing.
+#
+# We CANNOT `apt-get install` these normally. Some arm64 packages (python3.12-
+# minimal is the usual offender, pulled in transitively via libinput-dev ->
+# libwacom-dev) run post-install scripts, and dpkg tries to execute an arm64
+# binary on this amd64 host -> "Exec format error", dpkg exit 126, apt exit 100.
+#
+# So instead: --download-only to fetch the .debs, then `dpkg-deb -x` to unpack
+# the FILES without running any maintainer scripts. We only ever need headers,
+# .so files and .pc files for linking -- nothing from these packages is ever
+# executed -- so skipping configuration is exactly right. This is essentially
+# hand-rolling a sysroot.
+#
+# (The alternative fix is registering qemu binfmt on the host so arm64 binaries
+# can run under emulation: `docker run --rm --privileged multiarch/qemu-user-static
+# --reset -p yes`. That works but is host state, so CI needs it too, and it
+# doesn't survive a reboot. The unpack approach keeps everything in the image.)
+#
+# --no-install-recommends is deliberately NOT used here. The -dev packages ship
+# linker scripts -- e.g. /usr/lib/aarch64-linux-gnu/libm.so is a text file
+# containing GROUP( /lib/aarch64-linux-gnu/libm.so.6 ... ) -- so ld needs the
+# actual .so.N runtime libraries too. Without them you get
+# "cannot find /lib/aarch64-linux-gnu/libm.so.6" at link time. libc6:arm64 is
+# listed explicitly for the same reason.
+#
+# The package list maps to: fontconfig/freetype = text rendering, xkbcommon +
+# wayland + libinput + drm + gbm + egl = slint's renderer stack, asound = cpal
+# audio for the listener. All three workspace binaries build in one `cross
+# build --workspace`, so every dep has to be present even if only one crate
+# needs it.
+#
+# arm64-debs.txt records exactly which .deb versions landed, since dpkg-deb -x
+# bypasses dpkg's database -- `dpkg-query -l` will NOT show any of these.
+RUN set -eux; \
+    apt-get install --assume-yes --download-only \
+      libc6:arm64 \
+      libfontconfig1-dev:arm64 \
+      libfreetype6-dev:arm64 \
+      libxkbcommon-dev:arm64 \
+      libinput-dev:arm64 \
+      libgbm-dev:arm64 \
+      libwayland-dev:arm64 \
+      libdrm-dev:arm64 \
+      libegl-dev:arm64 \
+      libasound2-dev:arm64; \
+    ls /var/cache/apt/archives/*.deb > /opt/arm64-debs.txt; \
+    for deb in /var/cache/apt/archives/*.deb; do dpkg-deb -x "$deb" /; done; \
+    rm -rf /var/cache/apt/archives/*.deb /var/lib/apt/lists/*
+
+# The base image replaces /lib (normally a symlink to usr/lib on merged-/usr
+# distros like noble) with a real directory for its own toolchain. That breaks
+# glibc's linker scripts, which hardcode absolute paths like
+# GROUP( /lib/aarch64-linux-gnu/libm.so.6 ). Our unpacked sysroot lands in
+# /usr/lib/aarch64-linux-gnu, so bridge the two.
+RUN set -eux; \
+    if [ ! -e /lib/aarch64-linux-gnu ]; then \
+        ln -s /usr/lib/aarch64-linux-gnu /lib/aarch64-linux-gnu; \
+    fi; \
+    if [ ! -e /lib/ld-linux-aarch64.so.1 ]; then \
+        ln -s /usr/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1; \
+    fi; \
+    ls -la /lib/aarch64-linux-gnu/libm.so.6 /lib/ld-linux-aarch64.so.1
+
+# --- pkg-config wiring --------------------------------------------------------
+# Build scripts (alsa-sys, yeslogic-fontconfig-sys, etc) shell out to
+# pkg-config to find libraries. By default it would answer with the HOST's
+# amd64 .pc files and hand the linker x86_64 paths.
+#
+#   ALLOW_CROSS=1  -- pkg-config refuses to cross-compile without this
+#   PKG_CONFIG_PATH_<target> -- target-suffixed so it only applies to this
+#                               target, not host build-dependencies
+#   PKG_CONFIG_LIBDIR_<target> -- REPLACES the default search path rather than
+#                               adding to it. Without this, a missing arm64 .pc
+#                               silently falls back to the host one and you get
+#                               confusing link errors much later instead of a
+#                               clean failure here.
+ENV PKG_CONFIG_ALLOW_CROSS=1 \
+    PKG_CONFIG_PATH_aarch64_unknown_linux_gnu=/usr/lib/aarch64-linux-gnu/pkgconfig \
+    PKG_CONFIG_LIBDIR_aarch64_unknown_linux_gnu=/usr/lib/aarch64-linux-gnu/pkgconfig

@@ -114,7 +114,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let mut noteinfo_playednotes = String::new();
 
             for note in noteinfo.notes_played.iter().rev().take(4).rev() {
-                noteinfo_playednotes.push_str(format!("{} ", note).as_str());
+                noteinfo_playednotes.push_str(format!("{}%", note).as_str());
             }
 
             if !noteinfo_playednotes.is_empty() {

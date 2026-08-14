@@ -5,7 +5,7 @@ use slint::{ModelRc, VecModel};
 use std::error::Error;
 use std::io::{BufRead, BufReader};
 use std::os::unix::net::UnixListener;
-use std::process::Command;
+use std::process::{Command, Child};
 use std::rc::Rc;
 use std::sync::mpsc;
 use std::time::{Duration, Instant};
@@ -49,6 +49,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let (tx, rx) = mpsc::channel::<String>();
     let _ = std::fs::remove_file("/tmp/ocarina-listener.sock");
     let listener = UnixListener::bind("/tmp/ocarina-listener.sock").unwrap();
+    
 
     std::thread::spawn(move || {
         if let Ok((stream, _)) = listener.accept() {
@@ -74,6 +75,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut last_ip_calculation = Instant::now() - Duration::from_millis(1500);
     let mut ip_addy = String::new();
+    let mut aplay_tasks: Vec<Child> = vec![];
 
     ui_loop.start(
         slint::TimerMode::Repeated,
@@ -84,9 +86,49 @@ fn main() -> Result<(), Box<dyn Error>> {
                     let raw_msgs = msg.split("||").collect::<Vec<&str>>();
 
                     let played_notes: Vec<slint::SharedString> =
-                        raw_msgs[3].split(" ").map(|s| s.trim().into()).collect();
+                        raw_msgs[3].split("%").map(|s| s.trim().into()).collect();
 
-                    let played_notes_rc = Rc::new(VecModel::from(played_notes));
+                    let played_notes_rc = Rc::new(VecModel::from(played_notes.clone()));
+
+                    if played_notes[0].len() > 3 {
+                        let (cue_raw, song) = played_notes[0].split_at(1);
+
+                        let cue = match cue_raw {
+                            "o" => "song_correct",
+                            _ => "secret_found"
+                        };
+                        
+                        ui.set_songPlaying(slint::SharedString::from(song));
+                        ui.invoke_show_song();
+
+                        if aplay_tasks.len() == 0 {
+                            let aplay = Command::new("sh")
+                                .arg("-c")
+                                .arg(format!("aplay -D plughw:CARD=b1,DEV=1 /usr/share/ocarina/sounds/{cue}.wav && aplay -D plughw:CARD=b1,DEV=1 \"/usr/share/ocarina/sounds/{song}.wav\""))
+                                .spawn()
+                                .expect("Failed to start audio process");
+    
+                            aplay_tasks.push(aplay);
+                        } else {
+                            match aplay_tasks[0].try_wait() {
+                                // 1. Still Running
+                                Ok(None) => { }
+                                // 2. Finished Successfully (or with a specific code)
+                                Ok(Some(status)) if status.success() => {
+                                    aplay_tasks.pop();
+                                    ui.invoke_hide_song();
+                                }
+                                // 3. Finished but Failed
+                                Ok(Some(status)) => {
+                                    // It stopped, but it failed (e.g., sound card missing, wrong path).
+                                    ui.set_songPlaying(slint::SharedString::from(format!("Command failed with code: {:?}", status.code())));
+                                }
+                                // Error querying the OS
+                                Err(e) => ui.set_songPlaying(slint::SharedString::from(format!("Error talking to the OS: {}", e))),
+                            }
+                        }
+
+                    }
 
                     ui.set_playedNotes(ModelRc::new(played_notes_rc.clone()));
 
