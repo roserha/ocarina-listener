@@ -89,6 +89,7 @@ fn os_version() -> String {
         .unwrap_or_else(|| "unknown".into())
 }
 
+#[allow(unused_assignments)]
 fn main() -> Result<(), Box<dyn Error>> {
     if std::env::args().any(|a| a == "--version" || a == "-V") {
         println!("{VERSION}");
@@ -129,7 +130,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let ui_loop = slint::Timer::default();
 
     let mut last_ip_calculation = Instant::now() - Duration::from_millis(1500);
-    let mut first_ip_calculation = last_ip_calculation;
+    let first_ip_calculation = last_ip_calculation;
     let mut ip_addy = String::new();
     let mut aplay_tasks: Vec<Child> = vec![];
 
@@ -211,7 +212,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     ui.set_listening(raw_msgs[2] != "--");
 
                     ui.set_currentlyPlayingSong(raw_msgs[2].into());
-
+                    
                     if last_ip_calculation.elapsed() >= Duration::from_millis(1500) {
                         ip_addy = update_ip();
                         ui.set_ipAddy(slint::SharedString::from(ip_addy.clone()));

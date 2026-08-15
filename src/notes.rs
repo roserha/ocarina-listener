@@ -116,7 +116,7 @@ pub fn interpret_note(
             if note_played != "--" {
                 notes_played.push_back(note_played.clone());
 
-                if notes_played.len() >= 12 {
+                if notes_played.len() > 12 {
                     notes_played.pop_front();
                 }
             }

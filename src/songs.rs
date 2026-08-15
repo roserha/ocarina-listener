@@ -16,7 +16,6 @@ pub fn load_songbook(songbook: &mut BTreeMap<String, String>) {
 pub fn check_played_notes(played_notes: &mut VecDeque<String>, songbook: &mut BTreeMap<String, String>) {
     let mut stringified_played_notes = String::new();
 
-    
     // Add regular octave of notes
     for note in played_notes.iter(){
         // Skip note if it's a song name
@@ -65,6 +64,11 @@ pub fn check_played_notes(played_notes: &mut VecDeque<String>, songbook: &mut BT
         if stringified_played_notes.contains(melody) {
             played_notes.clear();
             played_notes.push_back(songname.clone());
+
+            for _ in 1..=3
+            {
+                played_notes.push_back(String::new());
+            }
         }
     }
 }

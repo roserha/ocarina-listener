@@ -27,6 +27,10 @@ stop)
     start-stop-daemon --stop --name ocarina-gui
     echo "Stopping ocarina-listener"
     start-stop-daemon --stop --pidfile /var/run/ocarina-listener.pid
+    echo "Cleaning up lingering aplay processes"
+    killall aplay
+    sleep 0.5
+    killall -9 aplay 2>/dev/null
     ;;
 *)
     echo "Usage: $0 {start|stop}"
