@@ -64,11 +64,6 @@ pub fn check_played_notes(played_notes: &mut VecDeque<String>, songbook: &mut BT
         if stringified_played_notes.contains(melody) {
             played_notes.clear();
             played_notes.push_back(songname.clone());
-
-            for _ in 1..=3
-            {
-                played_notes.push_back(String::new());
-            }
         }
     }
 }
