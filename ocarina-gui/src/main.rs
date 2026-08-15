@@ -205,6 +205,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                         }
                         
 
+                    } else {
+                        ui.set_songPlaying(slint::SharedString::new());
                     }
 
                     ui.set_playedNotes(ModelRc::new(played_notes_rc.clone()));
