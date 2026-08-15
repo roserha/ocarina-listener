@@ -1,0 +1,101 @@
+import { Button, VerticalBox, HorizontalBox } from "std-widgets.slint";
+import { NoteCanvas } from "components/note-canvas.slint";
+import { SongPopup } from "components/song-popup.slint";
+import { Info } from "components/info-menu.slint";
+
+component Logo inherits Rectangle {
+    width: 100%;
+
+    Image {
+        source: @image-url("components/imgs/OcarinaOS.svg");
+        width: 256px;
+        height: 46.94919455px;
+    }
+}
+
+////////////////////////////////////////////
+// App Window
+////////////////////////////////////////////
+
+export component AppWindow inherits Window {
+    // Set to true when exporting!
+    full-screen: true;
+    max-width: 1024px;
+    min-height: 600px;
+    min-width: 1024px;
+    preferred-height: 600px;
+    preferred-width: 1024px;
+    max-height: 600px;
+    background: #3f2954;
+
+    in-out property <string> currentlyPlayingSong: "TEsting again";
+    in-out property <[string]> playedNotes;
+    in-out property <bool> listening: false;
+    in-out property <string> ipAddy: "172.21.4.smth";
+    in-out property <string> OcarinaOSVersion;
+    in-out property <string> OcarinaGUIVersion;
+    in-out property <string> OcarinaListenerVersion;
+    in-out property <string> songPlaying;
+    in-out property <bool> playingJingle: false;
+
+    callback request-increase-value();
+
+    public function show_song() {
+        songPopup.show();
+    }
+
+    public function hide_song() {
+        songPopup.close();
+    }
+    
+    VerticalBox {
+        ////////////////////////////////////////////
+        // Top Panel
+        ////////////////////////////////////////////
+
+        HorizontalBox {
+            Button {
+                text: "Info";
+                clicked => {
+                    infoPopup.show();
+                }
+            }
+            Text {
+                width: 800px;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+                text: root.currentlyPlayingSong;
+            }
+        }
+        
+
+        ////////////////////////////////////////////
+        // Note Panel
+        ////////////////////////////////////////////
+        
+        NoteCanvas {
+            Notes: root.playedNotes;
+
+            Listening: root.listening;
+        }
+
+        ////////////////////////////////////////////
+        // Logo Panel
+        ////////////////////////////////////////////
+
+        Logo{
+            
+        }
+
+        songPopup := SongPopup {
+            songPlaying: root.songPlaying;
+        }
+
+        infoPopup := Info {
+            ipAddress: root.ipAddy;
+            osVersion: OcarinaOSVersion;
+            guiVersion: OcarinaGUIVersion;
+            listenerVersion: OcarinaListenerVersion;
+        }
+    }
+}

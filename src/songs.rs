@@ -16,9 +16,12 @@ pub fn load_songbook(songbook: &mut BTreeMap<String, String>) {
 pub fn check_played_notes(played_notes: &mut VecDeque<String>, songbook: &mut BTreeMap<String, String>) {
     let mut stringified_played_notes = String::new();
 
-    
     // Add regular octave of notes
     for note in played_notes.iter(){
+        // Skip note if it's a song name
+        if note.len() > 3 {
+            continue;
+        }
         stringified_played_notes.push_str(note);
         stringified_played_notes.push_str(" ");
     }
@@ -26,6 +29,10 @@ pub fn check_played_notes(played_notes: &mut VecDeque<String>, songbook: &mut BT
     // Add higher octave of notes
     stringified_played_notes.push_str("-|-");
     for note in played_notes.iter(){
+        // Skip note if it's a song name
+        if note.len() > 3 {
+            continue;
+        }
         let mut note_base = note.clone();
         let mut note_octave_str = note_base.split_off(note.len() - 1);
         let note_octave = note_octave_str.parse::<i16>().unwrap_or(0) + 1;
@@ -39,6 +46,10 @@ pub fn check_played_notes(played_notes: &mut VecDeque<String>, songbook: &mut BT
     // Add lower octave of notes
     stringified_played_notes.push_str("-|-");
     for note in played_notes.iter(){
+        // Skip note if it's a song name
+        if note.len() > 3 {
+            continue;
+        }
         let mut note_base = note.clone();
         let mut note_octave_str = note_base.split_off(note.len() - 1);
         let note_octave = note_octave_str.parse::<i16>().unwrap_or(0) - 1;

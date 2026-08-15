@@ -1,1 +1,1 @@
-ssh root@$(cat ./scripts/secrets/RPIIP.txt)
+ssh root@$1

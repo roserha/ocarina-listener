@@ -3,8 +3,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI:append = " file://issue \
                    file://load-modules \
                    file://aliases.sh \
-                   file://motd.sh \
-                   file://wifi-connect.sh"
+                   file://motd.sh"
 
 do_install:append() {
     # create all the directories we need first so nothing breaks
@@ -16,7 +15,7 @@ do_install:append() {
     # add sysfs to fstab so it gets mounted on boot
     echo "sysfs                /sys                 sysfs      defaults              0  0" >> ${D}${sysconfdir}/fstab
 
-    # install the pretty login screen and os info files
+    # install the pretty login screen and os info files for serial
     install -m 0644 ${WORKDIR}/issue ${D}${sysconfdir}/issue
     install -m 0644 ${WORKDIR}/issue ${D}${sysconfdir}/issue.net
     
@@ -54,9 +53,6 @@ EOF
     # install the motd script that shows system info after login
     install -m 0755 ${WORKDIR}/motd.sh ${D}${sysconfdir}/profile.d/motd.sh
 
-    # install wifi-connect script to auto login to wifi if existent
-    install -m 0755 ${WORKDIR}/wifi-connect.sh ${D}${sysconfdir}/init.d/wifi-connect
-    ln -s ../init.d/wifi-connect ${D}${sysconfdir}/rcS.d/S07wifi-connect
 }
 
 FILES:${PN}:append = " ${sysconfdir}/profile.d/motd.sh \
@@ -66,4 +62,4 @@ FILES:${PN}:append = " ${sysconfdir}/profile.d/motd.sh \
                        ${sysconfdir}/rcS.d/S05set-hostname \
                        ${sysconfdir}/init.d/load-modules \
                        ${sysconfdir}/rcS.d/S06load-modules \
-                       ${sysconfdir}/init.d/wifi-connect"
+                       ${sysconfdir}/init.d/plymouth-start"

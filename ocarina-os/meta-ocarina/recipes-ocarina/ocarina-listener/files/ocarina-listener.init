@@ -5,20 +5,35 @@
 # Required-Stop:
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Ocarina listener
+# Short-Description: Ocarina listener and GUI
 ### END INIT INFO
 
 case "$1" in
 start)
-  echo "Starting ocarina-listener"
-  start-stop-daemon --start --background --exec /usr/bin/ocarina-listener
-  ;;
+    echo "Starting ocarina-listener"
+    start-stop-daemon --start --background --make-pidfile --pidfile /var/run/ocarina-listener.pid --exec /usr/bin/ocarina-listener
+
+    echo "Waiting for wayland socket..."
+    while [ ! -S /run/user/1000/wayland-1 ]; do
+        sleep 0.5
+    done
+
+    echo "Starting ocarina-gui"
+    start-stop-daemon --start --background \
+        --exec /usr/bin/ocarina-gui-launcher \
+    ;;
 stop)
-  echo "Stopping ocarina-listener"
-  start-stop-daemon --stop --exec /usr/bin/ocarina-listener
-  ;;
+    echo "Stopping ocarina-gui"
+    start-stop-daemon --stop --name ocarina-gui
+    echo "Stopping ocarina-listener"
+    start-stop-daemon --stop --pidfile /var/run/ocarina-listener.pid
+    echo "Cleaning up lingering aplay processes"
+    killall aplay
+    sleep 0.5
+    killall -9 aplay 2>/dev/null
+    ;;
 *)
-  echo "Usage: $0 {start|stop}"
-  exit 1
-  ;;
+    echo "Usage: $0 {start|stop}"
+    exit 1
+    ;;
 esac
